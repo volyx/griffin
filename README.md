@@ -86,6 +86,28 @@ Options:
 That is basically it. You write all your content in markdown. And run `griffin publish` and see the magic happen.
 
 
+https://medium.com/@mitch.seymour/building-native-java-clis-with-graalvm-picocli-and-gradle-2e8a8388d70d
+
+```
+./gradlew run
+
+./gradlew run --args="--help"
+
+./gradlew nativeImage
+
+./gradlew nativeImage -P com.palantir.graal.cache.dir=/tmp
+
+$ cd ./build/graal# no args example
+$ ./mycli# output
+Hello CLI :)# args example
+$ ./mycli --help# output
+Usage: mycli [-hV]
+Says hello
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.
+
+```
+
 ## License
 Copyright 2017 Pawan Dubey pawandubey@outlook.com.
 

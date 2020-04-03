@@ -76,7 +76,6 @@
             <artifactId>picocli</artifactId>
             <version>4.2.0</version>
         </dependency>
-
         <dependency>
             <groupId>com.github.rjeschke</groupId>
             <artifactId>txtmark</artifactId>
@@ -88,19 +87,9 @@
             <version>0.4.0</version>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-core</artifactId>
-            <version>1.3.31.Final</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.jknack</groupId>
             <artifactId>handlebars</artifactId>
             <version>4.1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.zeroturnaround</groupId>
-            <artifactId>zt-zip</artifactId>
-            <version>1.8</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

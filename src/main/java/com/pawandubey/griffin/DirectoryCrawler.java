@@ -168,7 +168,7 @@ public class DirectoryCrawler {
                     LocalDateTime fileModified = LocalDateTime.ofInstant(Files.getLastModifiedTime(file).toInstant(), ZoneId.systemDefault());
                     LocalDateTime lastParse = LocalDateTime.parse(InfoHandler.LAST_PARSE_DATE, InfoHandler.formatter);
                     Path resolvedPath = Paths.get(OUTPUT_DIRECTORY).resolve(rootPath.relativize(file));
-                    if (Files.probeContentType(file).equals("text/x-markdown")) {
+                    if (file.getFileName().toString().endsWith(".md")) {
                         if (fileModified.isAfter(lastParse)) {
                             Parsable parsable = createParsable(file);
                             Data.fileQueue.removeIf(p -> p.getPermalink().equals(parsable.getPermalink()));

@@ -16,6 +16,7 @@
 package com.pawandubey.griffin;
 
 import com.pawandubey.griffin.cache.Cacher;
+import com.pawandubey.griffin.cache.MapDbCacher;
 import com.pawandubey.griffin.cli.NewCommand;
 import com.pawandubey.griffin.cli.PreviewCommand;
 import com.pawandubey.griffin.cli.PublishCommand;
@@ -69,7 +70,7 @@ public class Griffin implements Runnable {
      * Creates a new instance of Griffin
      */
     public Griffin() {
-        cacher = new Cacher();
+        cacher = Cacher.getCacher();
         crawler = new DirectoryCrawler();
     }
 
