@@ -15,10 +15,14 @@
  */
 package com.pawandubey.griffin;
 
-import org.zeroturnaround.zip.ZipUtil;
-
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  *
@@ -26,6 +30,15 @@ import java.nio.file.Path;
  */
 public class Initializer {
 
+    private final String zipp;// = Paths.get(ClassLoader.getSystemClassLoader().getResource(".").getPath()).getParent().toString();
+
+    public Initializer() throws URISyntaxException {
+        Path jarRootPath;
+
+        jarRootPath = Paths.get(Initializer.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+        zipp = jarRootPath.toAbsolutePath().toString();           
+        
+    }
 
     /**
      * Scaffolds out a new directory with the predefined Griffin directory
@@ -38,11 +51,25 @@ public class Initializer {
      */
     public Path scaffold(Path rootPath, String name) throws IOException {
         //DirectoryCrawler.ROOT_DIRECTORY = rootPath.resolve(name).toAbsolutePath().normalize().toString();
-        unzipStructure(rootPath.resolve(name));
+        unzip(rootPath.resolve(name));
         return rootPath.resolve(name);
     }
 
-    private void unzipStructure(Path path) {
-        ZipUtil.unpack(Initializer.class.getClassLoader().getResourceAsStream("scaffold.zip"), path.toFile());
+    public void unzip(Path targetDir) throws IOException {
+        if (!Files.exists(targetDir)) {
+            Files.createDirectory(targetDir);
+        }
+        final File file = new File(zipp + File.separator + "scaffold.zip");
+        try (ZipInputStream zipIn = new ZipInputStream(Files.newInputStream(file.toPath()))) {
+            for (ZipEntry ze; (ze = zipIn.getNextEntry()) != null; ) {
+                Path resolvedPath = targetDir.resolve(ze.getName());
+                if (ze.isDirectory()) {
+                    Files.createDirectory(resolvedPath);
+                } else {
+                    Files.createDirectories(resolvedPath.getParent());
+                    Files.copy(zipIn, resolvedPath);
+                }
+            }
+        }
     }
 }
