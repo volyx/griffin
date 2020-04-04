@@ -15,12 +15,9 @@
  */
 package com.pawandubey.griffin;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -29,16 +26,6 @@ import java.util.zip.ZipInputStream;
  * @author Pawan Dubey pawandubey@outlook.com
  */
 public class Initializer {
-
-    private final String zipp;// = Paths.get(ClassLoader.getSystemClassLoader().getResource(".").getPath()).getParent().toString();
-
-    public Initializer() throws URISyntaxException {
-        Path jarRootPath;
-
-        jarRootPath = Paths.get(Initializer.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
-        zipp = jarRootPath.toAbsolutePath().toString();           
-        
-    }
 
     /**
      * Scaffolds out a new directory with the predefined Griffin directory
@@ -50,17 +37,11 @@ public class Initializer {
      * @throws java.io.IOException the exception
      */
     public Path scaffold(Path rootPath, String name) throws IOException {
-        //DirectoryCrawler.ROOT_DIRECTORY = rootPath.resolve(name).toAbsolutePath().normalize().toString();
-        unzip(rootPath.resolve(name));
-        return rootPath.resolve(name);
-    }
-
-    public void unzip(Path targetDir) throws IOException {
+        Path targetDir = rootPath.resolve(name);
         if (!Files.exists(targetDir)) {
             Files.createDirectory(targetDir);
         }
-        final File file = new File(zipp + File.separator + "scaffold.zip");
-        try (ZipInputStream zipIn = new ZipInputStream(Files.newInputStream(file.toPath()))) {
+        try (ZipInputStream zipIn = new ZipInputStream(Initializer.class.getClassLoader().getResourceAsStream("scaffold.zip"))) {
             for (ZipEntry ze; (ze = zipIn.getNextEntry()) != null; ) {
                 Path resolvedPath = targetDir.resolve(ze.getName());
                 if (ze.isDirectory()) {
@@ -71,5 +52,7 @@ public class Initializer {
                 }
             }
         }
+        return rootPath.resolve(name);
     }
+
 }

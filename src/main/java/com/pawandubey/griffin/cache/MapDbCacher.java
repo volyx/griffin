@@ -45,8 +45,8 @@ public class MapDbCacher implements Cacher {
 //        ConcurrentMap map = db.hashMap("map").createOrOpen();
 //
         db = DBMaker.fileDB(new File(CACHE_PATH))
-                .fileMmapEnableIfSupported()
-                .closeOnJvmShutdownWeakReference()
+//                .fileMmapEnableIfSupported()
+//                .closeOnJvmShutdownWeakReference()
                 .make();
     }
 
@@ -55,9 +55,7 @@ public class MapDbCacher implements Cacher {
      */
     @Override
     public void cacheTaggedParsables() {
-        ConcurrentMap<String, Object> mainMap = db.hashMap("mainMap",
-                Serializer.STRING, Serializer.JAVA)
-                .createOrOpen();
+        ConcurrentMap<String, Object> mainMap = getMainMap();
         mainMap.put("tags", tags);
         db.commit();
     }
@@ -67,9 +65,7 @@ public class MapDbCacher implements Cacher {
      */
     @Override
     public void cacheFileQueue() {
-        ConcurrentMap<String, Object> mainMap = db.hashMap("mainMap",
-                Serializer.STRING, Serializer.JAVA)
-                .createOrOpen();
+        ConcurrentMap<String, Object> mainMap = getMainMap();
         mainMap.put("fileQueue", fileQueue);
     }
 
@@ -80,10 +76,13 @@ public class MapDbCacher implements Cacher {
      */
     @Override
     public ConcurrentMap<String, Object> readFromCacheIfExists() {
-        ConcurrentMap<String, Object> mainMap = db.hashMap("mainMap",
+        return getMainMap();
+    }
+
+    private ConcurrentMap<String, Object> getMainMap() {
+        return (ConcurrentMap<String, Object>) db.hashMap("mainMap",
                 Serializer.STRING, Serializer.JAVA)
                 .createOrOpen();
-        return mainMap;
     }
 
     /**
@@ -95,7 +94,7 @@ public class MapDbCacher implements Cacher {
      */
     @Override
     public boolean cacheExists() {
-        return !db.hashMap("mainMap").createOrOpen().isEmpty();
+        return !getMainMap().isEmpty();
     }
 
 }

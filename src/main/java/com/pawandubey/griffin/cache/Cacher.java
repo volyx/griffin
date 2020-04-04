@@ -6,8 +6,8 @@ public interface Cacher {
 
 
 	static Cacher getCacher() {
-		return new MapDbCacher();
-//		return new SimpleCacher();
+//		return new MapDbCacher();
+		return new SimpleCacher();
 	}
 
 	void cacheTaggedParsables();
