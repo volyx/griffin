@@ -47,7 +47,7 @@ public class NewCommand implements Callable<Integer> {
 			Griffin griffin = new Griffin(file.toPath().resolve(name));
 			griffin.initialize(file.toPath(), name);
 			System.out.println("Successfully created new site.");
-		} catch (IOException | URISyntaxException ex) {
+		} catch (IOException ex) {
 			Logger.getLogger(NewCommand.class.getName()).log(Level.SEVERE, null, ex);
 			return -1;
 		}

@@ -17,6 +17,7 @@ dependencies {
     compile "com.moandjiezana.toml:toml4j:0.4.0"
     compile "com.github.jknack:handlebars:4.1.2"
     compile "org.slf4j:slf4j-simple:1.7.12"
+    implementation 'com.h2database:h2-mvstore:1.4.200'
     compile 'org.mapdb:mapdb:3.0.8'
 //    compile 'org.graalvm.nativeimage:svm:19.3.1'
 

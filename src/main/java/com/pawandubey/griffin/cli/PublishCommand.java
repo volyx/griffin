@@ -16,6 +16,7 @@
 package com.pawandubey.griffin.cli;
 
 import com.pawandubey.griffin.Griffin;
+import com.pawandubey.griffin.cache.Cacher;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -42,7 +43,7 @@ public class PublishCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
-            Griffin griffin = new Griffin();
+            Griffin griffin = new Griffin(Cacher.getCacher());
             griffin.printAsciiGriffin();
             griffin.publish(fastParse, rebuild);
             System.out.println("All done for now! I will be bach!");

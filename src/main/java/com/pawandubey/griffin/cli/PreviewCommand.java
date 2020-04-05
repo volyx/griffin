@@ -16,6 +16,7 @@
 package com.pawandubey.griffin.cli;
 
 import com.pawandubey.griffin.Griffin;
+import com.pawandubey.griffin.cache.Cacher;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -39,7 +40,7 @@ public class PreviewCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
-            Griffin griffin = new Griffin();
+            Griffin griffin = new Griffin(Cacher.getCacher());
             griffin.printAsciiGriffin();
             System.out.println("Starting preview on port " + port);
             griffin.preview(port);

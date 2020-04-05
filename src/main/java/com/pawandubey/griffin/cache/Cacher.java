@@ -6,8 +6,9 @@ public interface Cacher {
 
 
 	static Cacher getCacher() {
+		return new MVStoreCacherImpl();
 //		return new MapDbCacher();
-		return new SimpleCacher();
+//		return new SimpleCacher();
 	}
 
 	void cacheTaggedParsables();

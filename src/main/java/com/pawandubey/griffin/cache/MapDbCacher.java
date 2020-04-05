@@ -15,11 +15,16 @@
  */
 package com.pawandubey.griffin.cache;
 
+import com.github.rjeschke.txtmark.Run;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 
 import java.io.File;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentMap;
 
 import static com.pawandubey.griffin.Data.fileQueue;
@@ -28,73 +33,72 @@ import static com.pawandubey.griffin.DirectoryCrawler.FILE_SEPARATOR;
 import static com.pawandubey.griffin.DirectoryCrawler.ROOT_DIRECTORY;
 
 /**
- *
  * @author Pawan Dubey pawandubey@outlook.com
  */
 public class MapDbCacher implements Cacher {
 
-    public static final String CACHE_PATH = ROOT_DIRECTORY + FILE_SEPARATOR + "cache.db";
-    public final DB db;
+	public static final String CACHE_PATH = ROOT_DIRECTORY + FILE_SEPARATOR + "cache.db";
+	public final DB db;
 
-    /**
-     * Creates a new Cacher with a file database in the ROOT_FOLDER with
-     * asyncWriteEnabled and transactionDisabled with JVM shutdown hook.
-     */
-    public MapDbCacher() {
+	/**
+	 * Creates a new Cacher with a file database in the ROOT_FOLDER with
+	 * asyncWriteEnabled and transactionDisabled with JVM shutdown hook.
+	 */
+	public MapDbCacher() {
 //        db = DBMaker.fileDB("file.db").make();
 //        ConcurrentMap map = db.hashMap("map").createOrOpen();
 //
-        db = DBMaker.fileDB(new File(CACHE_PATH))
+		db = DBMaker.fileDB(new File(CACHE_PATH))
 //                .fileMmapEnableIfSupported()
 //                .closeOnJvmShutdownWeakReference()
-                .make();
-    }
+				.make();
+	}
 
-    /**
-     * Creates a cache of everything other than the fileQueue.
-     */
-    @Override
-    public void cacheTaggedParsables() {
-        ConcurrentMap<String, Object> mainMap = getMainMap();
-        mainMap.put("tags", tags);
-        db.commit();
-    }
+	/**
+	 * Creates a cache of everything other than the fileQueue.
+	 */
+	@Override
+	public void cacheTaggedParsables() {
+		ConcurrentMap<String, Object> mainMap = getMainMap();
+		mainMap.put("tags", tags);
+		db.commit();
+	}
 
-    /**
-     * Caches the fileQueue before it goes for parsing.
-     */
-    @Override
-    public void cacheFileQueue() {
-        ConcurrentMap<String, Object> mainMap = getMainMap();
-        mainMap.put("fileQueue", fileQueue);
-    }
+	/**
+	 * Caches the fileQueue before it goes for parsing.
+	 */
+	@Override
+	public void cacheFileQueue() {
+		ConcurrentMap<String, Object> mainMap = getMainMap();
+		mainMap.put("fileQueue", fileQueue);
+	}
 
-    /**
-     * Fetches and returns the map from the cache.
-     *
-     * @return the cached map.
-     */
-    @Override
-    public ConcurrentMap<String, Object> readFromCacheIfExists() {
-        return getMainMap();
-    }
+	/**
+	 * Fetches and returns the map from the cache.
+	 *
+	 * @return the cached map.
+	 */
+	@Override
+	public ConcurrentMap<String, Object> readFromCacheIfExists() {
+		return getMainMap();
+	}
 
-    private ConcurrentMap<String, Object> getMainMap() {
-        return (ConcurrentMap<String, Object>) db.hashMap("mainMap",
-                Serializer.STRING, Serializer.JAVA)
-                .createOrOpen();
-    }
+	private ConcurrentMap<String, Object> getMainMap() {
+		return (ConcurrentMap<String, Object>) db.hashMap("mainMap",
+				Serializer.STRING, Serializer.JAVA)
+				.createOrOpen();
+	}
 
-    /**
-     * Checks if the cache exists by checking if the map contains any elements.
-     * This is necessary because the getHashMap method creates a new map if not
-     * present instead of returning null.
-     *
-     * @return the HashMap
-     */
-    @Override
-    public boolean cacheExists() {
-        return !getMainMap().isEmpty();
-    }
+	/**
+	 * Checks if the cache exists by checking if the map contains any elements.
+	 * This is necessary because the getHashMap method creates a new map if not
+	 * present instead of returning null.
+	 *
+	 * @return the HashMap
+	 */
+	@Override
+	public boolean cacheExists() {
+		return !getMainMap().isEmpty();
+	}
 
 }

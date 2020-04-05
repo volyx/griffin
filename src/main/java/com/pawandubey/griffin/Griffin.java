@@ -69,9 +69,8 @@ public class Griffin implements Runnable {
     /**
      * Creates a new instance of Griffin
      */
-    public Griffin() {
-        cacher = Cacher.getCacher();
-        crawler = new DirectoryCrawler();
+    private Griffin() {
+        this.crawler = new DirectoryCrawler();
     }
 
     /**
@@ -81,7 +80,12 @@ public class Griffin implements Runnable {
      * @param path The path to the root directory of the griffin site.
      */
     public Griffin(Path path) {
-        crawler = new DirectoryCrawler(path.toString());
+        this.crawler = new DirectoryCrawler(path.toString());
+    }
+
+    public Griffin(Cacher cacher) {
+        this.cacher = cacher;
+        this.crawler = new DirectoryCrawler();
     }
 
     /**
@@ -90,9 +94,8 @@ public class Griffin implements Runnable {
      * @param path The path at which to scaffold.
      * @param name The name to give to the directory
      * @throws IOException the exception
-     * @throws java.net.URISyntaxException
      */
-    public void initialize(Path path, String name) throws IOException, URISyntaxException {
+    public void initialize(Path path, String name) throws IOException {
         checkPathValidity(path, name);
 
         initializeConfigurationSettings(path, name);
