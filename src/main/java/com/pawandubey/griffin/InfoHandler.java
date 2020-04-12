@@ -48,9 +48,9 @@ public class InfoHandler {
     static String LAST_PARSE_DATE;
 
     public InfoHandler() throws IOException {
-        final Path infoFilePath = Paths.get(DirectoryCrawler.INFO_FILE);
+        final Path infoFilePath = Paths.get(DirectoryStructure.getInstance().INFO_FILE);
         if (!Files.exists(infoFilePath)) {
-            throw new IOException(DirectoryCrawler.INFO_FILE + " doesn't exist");
+            throw new IOException(DirectoryStructure.getInstance().INFO_FILE + " doesn't exist");
         }
         try (BufferedReader br = Files.newBufferedReader(infoFilePath,
                                                          StandardCharsets.UTF_8)) {
@@ -67,7 +67,7 @@ public class InfoHandler {
      * the latest posts.
      */
     protected void writeInfoFile() {
-        Path infoFilePath = Paths.get(DirectoryCrawler.INFO_FILE);
+        Path infoFilePath = Paths.get(DirectoryStructure.getInstance().INFO_FILE);
         try (BufferedWriter bw
                             = Files.newBufferedWriter(infoFilePath,
                                                       StandardCharsets.UTF_8,

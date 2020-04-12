@@ -15,6 +15,7 @@
  */
 package com.pawandubey.griffin.cache;
 
+import com.pawandubey.griffin.DirectoryStructure;
 import com.pawandubey.griffin.model.Parsable;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -24,15 +25,14 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.pawandubey.griffin.DirectoryCrawler.FILE_SEPARATOR;
-import static com.pawandubey.griffin.DirectoryCrawler.ROOT_DIRECTORY;
+import static com.pawandubey.griffin.DirectoryStructure.FILE_SEPARATOR;
 
 /**
  * @author Pawan Dubey pawandubey@outlook.com
  */
 public class MapDbCacher implements Cacher {
 
-	public static final String CACHE_PATH = ROOT_DIRECTORY + FILE_SEPARATOR + "cache.db";
+	public static final String CACHE_PATH = DirectoryStructure.getInstance().ROOT_DIRECTORY + FILE_SEPARATOR + "cache.db";
 	public final DB db;
 
 	/**

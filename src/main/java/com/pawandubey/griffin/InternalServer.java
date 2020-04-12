@@ -27,8 +27,6 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.pawandubey.griffin.DirectoryCrawler.OUTPUT_DIRECTORY;
-
 /**
  * Web Server for serving the static site for live preview,
  * on default port 9090.
@@ -56,7 +54,7 @@ public class InternalServer {
 			throw new UncheckedIOException(e);
 		}
 
-		final Path root = Paths.get(OUTPUT_DIRECTORY);
+		final Path root = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY);
 
 		server.createContext("/", httpExchange -> {
 			URI uri = httpExchange.getRequestURI();

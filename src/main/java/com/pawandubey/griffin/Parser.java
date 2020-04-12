@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 
 import static com.pawandubey.griffin.Configurator.LINE_SEPARATOR;
 import static com.pawandubey.griffin.Data.*;
-import static com.pawandubey.griffin.DirectoryCrawler.*;
+import static com.pawandubey.griffin.DirectoryStructure.*;
 
 /**
  *
@@ -85,12 +85,12 @@ public class Parser {
      */
     protected void parse(List<Parsable> collection) throws IOException {
         Parsable p;
-        if (config.getRenderTags() && Files.notExists(Paths.get(TAG_DIRECTORY))) {
-            Files.createDirectory(Paths.get(TAG_DIRECTORY));
+        if (config.getRenderTags() && Files.notExists(Paths.get(DirectoryStructure.getInstance().TAG_DIRECTORY))) {
+            Files.createDirectory(Paths.get(DirectoryStructure.getInstance().TAG_DIRECTORY));
         }
-        if (Files.notExists(Paths.get(OUTPUT_DIRECTORY).resolve("SITEMAP.xml"))
+        if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("SITEMAP.xml"))
             && Files.exists(Paths.get(HandlebarsRenderer.templateRoot).resolve("SITEMAP.html"))) {
-            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(OUTPUT_DIRECTORY).resolve("SITEMAP.xml"), StandardCharsets.UTF_8)) {
+            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("SITEMAP.xml"), StandardCharsets.UTF_8)) {
                 bw.write(renderer.renderSitemap());
             }
             catch (IOException ex) {
@@ -111,29 +111,29 @@ public class Parser {
     private void renderIndexRssAnd404() throws IOException {
         List<SingleIndex> list = indexer.getIndexList();
 
-        if (Files.notExists(Paths.get(OUTPUT_DIRECTORY).resolve("index.html"))) {
-            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(OUTPUT_DIRECTORY).resolve("index.html"), StandardCharsets.UTF_8)) {
+        if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("index.html"))) {
+            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("index.html"), StandardCharsets.UTF_8)) {
                 bw.write(renderer.renderIndex(list.get(0)));
             }
             catch (IOException ex) {
                 Logger.getLogger(Parser.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        if (Files.notExists(Paths.get(OUTPUT_DIRECTORY, "page"))) {
-            Files.createDirectory(Paths.get(OUTPUT_DIRECTORY, "page"));
+        if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "page"))) {
+            Files.createDirectory(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "page"));
         }
         list.remove(0);
 
         for (SingleIndex s : list) {
-            Path secondaryIndexPath = Paths.get(OUTPUT_DIRECTORY, "page", "" + (list.indexOf(s) + 2));
+            Path secondaryIndexPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "page", "" + (list.indexOf(s) + 2));
             Files.createDirectory(secondaryIndexPath);
             try (BufferedWriter bw = Files.newBufferedWriter(secondaryIndexPath.resolve("index.html"), StandardCharsets.UTF_8)) {
                 bw.write(renderer.renderIndex(s));
             }
         }
 
-        if (Files.notExists(Paths.get(OUTPUT_DIRECTORY).resolve("feed.xml")) && Files.exists(Paths.get(HandlebarsRenderer.templateRoot).resolve("feed.htm;"))) {
-            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(OUTPUT_DIRECTORY).resolve("feed.xml"), StandardCharsets.UTF_8)) {
+        if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("feed.xml")) && Files.exists(Paths.get(HandlebarsRenderer.templateRoot).resolve("feed.htm;"))) {
+            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("feed.xml"), StandardCharsets.UTF_8)) {
                 bw.write(renderer.renderRssFeed());
             }
             catch (IOException ex) {
@@ -141,8 +141,8 @@ public class Parser {
             }
         }
 
-        if (Files.notExists(Paths.get(OUTPUT_DIRECTORY, "404.html")) && Files.exists(Paths.get(HandlebarsRenderer.templateRoot, "404.html"))) {
-            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(OUTPUT_DIRECTORY).resolve("404.html"), StandardCharsets.UTF_8)) {
+        if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "404.html")) && Files.exists(Paths.get(HandlebarsRenderer.templateRoot, "404.html"))) {
+            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("404.html"), StandardCharsets.UTF_8)) {
                 bw.write(renderer.render404());
             }
             catch (IOException ex) {
@@ -184,7 +184,7 @@ public class Parser {
             parts.stream()
                     .forEach(l -> tagExecutor.submit(() -> {
                 for (String a : l) {
-                    Path tagDir = Paths.get(TAG_DIRECTORY).resolve(a);
+                    Path tagDir = Paths.get(DirectoryStructure.getInstance().TAG_DIRECTORY).resolve(a);
                     if (Files.notExists(tagDir)) {
                         try {// (BufferedWriter bw = Files.newBufferedWriter(tagDir.resolve("index.html"), StandardCharsets.UTF_8)) {
                             Files.createDirectory(tagDir);
@@ -205,7 +205,7 @@ public class Parser {
                                     if (Files.notExists(slugPath)) {
                                         Files.createDirectory(slugPath);
                                         Path linkedFile = resolveHtmlPath(p);
-                                        Files.createSymbolicLink(slugPath.resolve("index.html"), Paths.get("/").resolve(Paths.get(OUTPUT_DIRECTORY)).relativize(linkedFile));
+                                        Files.createSymbolicLink(slugPath.resolve("index.html"), Paths.get("/").resolve(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY)).relativize(linkedFile));
                                     }
                                 }
                                 catch (IOException ex) {
@@ -286,7 +286,7 @@ public class Parser {
      *
      * @param p the Parsable instance
      */
-    private void writeParsedFile(Parsable p) throws IOException {
+     void writeParsedFile(Parsable p) throws IOException {
         Path htmlPath = resolveHtmlPath(p);
 
         if (config.getRenderTags() && p instanceof Post) {
@@ -301,8 +301,7 @@ public class Parser {
             }
             bw.write(renderer.renderParsable(p));
 
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(Parser.class
                     .getName()).log(Level.SEVERE, null, ex);
         }
@@ -312,7 +311,7 @@ public class Parser {
     private Path resolveHtmlPath(Parsable p) throws IOException {
         String name = p.getSlug();
 //        Path parsedDirParent = Paths.get(OUTPUT_DIRECTORY).resolve(Paths.get(SOURCE_DIRECTORY).resolve(p.getLocation()));
-        Path parsedDir = Paths.get(OUTPUT_DIRECTORY).resolve(Paths.get(SOURCE_DIRECTORY).resolve(name));
+        Path parsedDir = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve(name);
         if (Files.notExists(parsedDir)) {
             Files.createDirectory(parsedDir);
         }

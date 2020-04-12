@@ -15,12 +15,15 @@
  */
 package com.pawandubey.griffin.cli;
 
+import com.pawandubey.griffin.DirectoryCrawler;
+import com.pawandubey.griffin.DirectoryStructure;
 import com.pawandubey.griffin.Griffin;
 import com.pawandubey.griffin.cache.Cacher;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,15 +43,19 @@ public class PublishCommand implements Callable<Integer> {
     @Option(names = {"--rebuild", "-r"}, description = "Rebuild the site from scratch. This may take time for more number of posts.")
     private Boolean rebuild = false;
 
+    @Option(names = {"--source", "-s"}, description = "Filesystem path to read files relative from")
+    private Path source;
+
     @Override
     public Integer call() {
         try {
+            DirectoryStructure.create(source);
             Griffin griffin = new Griffin(Cacher.getCacher());
             griffin.printAsciiGriffin();
             griffin.publish(fastParse, rebuild);
             System.out.println("All done for now! I will be bach!");
         }
-        catch (IOException | InterruptedException ex) {
+        catch (IOException ex) {
             Logger.getLogger(PublishCommand.class.getName()).log(Level.SEVERE, null, ex);
             return -1;
         }

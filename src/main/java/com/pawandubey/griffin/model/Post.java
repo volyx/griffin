@@ -16,6 +16,7 @@
 package com.pawandubey.griffin.model;
 
 import com.pawandubey.griffin.Data;
+import com.pawandubey.griffin.DirectoryStructure;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,7 +26,6 @@ import java.util.List;
 
 import static com.pawandubey.griffin.Data.config;
 import static com.pawandubey.griffin.DirectoryCrawler.EXCERPT_MARKER;
-import static com.pawandubey.griffin.DirectoryCrawler.SOURCE_DIRECTORY;
 
 /**
  *
@@ -151,7 +151,7 @@ public class Post implements Parsable {
      */
     @Override
     public String getPermalink() {
-        Path parentDir = Paths.get(SOURCE_DIRECTORY).relativize(Paths.get(location).getParent());
+        Path parentDir = Paths.get(DirectoryStructure.getInstance().SOURCE_DIRECTORY).relativize(Paths.get(location).getParent());
         permalink = Data.config.getSiteBaseUrl().concat("/").concat(parentDir.resolve(getSlug()).toString()).concat("/");
         return permalink;
     }

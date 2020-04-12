@@ -44,8 +44,7 @@ public class Content {
 		return null;
 	}
 
-	@NotNull
-	private static Parsable parse(String relativePath, BufferedReader br) throws IOException {
+	static Parsable parse(String relativePath, BufferedReader br) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		header.setLength(0);
 		String line;

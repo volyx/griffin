@@ -68,7 +68,7 @@ public class Griffin implements Runnable {
      * Creates a new instance of Griffin
      */
     private Griffin() {
-        this.crawler = new DirectoryCrawler();
+        this.crawler = null;
     }
 
     /**
@@ -78,7 +78,7 @@ public class Griffin implements Runnable {
      * @param path The path to the root directory of the griffin site.
      */
     public Griffin(Path path) {
-        this.crawler = new DirectoryCrawler(path.toString());
+        this.crawler = new DirectoryCrawler();
     }
 
     public Griffin(Cacher cacher) {
@@ -112,9 +112,8 @@ public class Griffin implements Runnable {
      * @param fastParse Do a fast incremental parse
      * @param rebuild Do force a full rebuild
      * @throws IOException the exception
-     * @throws InterruptedException the exception
      */
-    public void publish(boolean fastParse, boolean rebuild) throws IOException, InterruptedException {
+    public void publish(boolean fastParse, boolean rebuild) throws IOException {
         long start = System.currentTimeMillis();
         InfoHandler info = new InfoHandler();
         if (cacher.cacheExists() && !rebuild) {
@@ -126,15 +125,15 @@ public class Griffin implements Runnable {
             Data.tags.putAll(tag);
             int st = Data.fileQueue.size();
             System.out.println("Read " + st + " objects from the cache. Woohooo!!");
-            crawler.fastReadIntoQueue(Paths.get(DirectoryCrawler.SOURCE_DIRECTORY).normalize());
+            crawler.fastReadIntoQueue(Paths.get(DirectoryStructure.getInstance().SOURCE_DIRECTORY).normalize());
             System.out.println("Found " + (Data.fileQueue.size() - st) + " new objects!");
         } else {
             if (fastParse && !rebuild) {
-                crawler.fastReadIntoQueue(Paths.get(DirectoryCrawler.SOURCE_DIRECTORY).normalize());
+                crawler.fastReadIntoQueue(Paths.get(DirectoryStructure.getInstance().SOURCE_DIRECTORY).normalize());
             }
             else {
                 System.out.println("Rebuilding site from scratch...");
-                crawler.readIntoQueue(Paths.get(DirectoryCrawler.SOURCE_DIRECTORY).normalize());
+                crawler.readIntoQueue(Paths.get(DirectoryStructure.getInstance().SOURCE_DIRECTORY).normalize());
             }          
         }
         info.findLatestPosts(fileQueue);

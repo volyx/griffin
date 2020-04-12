@@ -1,5 +1,6 @@
 package com.pawandubey.griffin.cache;
 
+import com.pawandubey.griffin.DirectoryStructure;
 import com.pawandubey.griffin.model.Parsable;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
@@ -14,19 +15,16 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.pawandubey.griffin.Data.fileQueue;
-import static com.pawandubey.griffin.Data.tags;
-import static com.pawandubey.griffin.DirectoryCrawler.FILE_SEPARATOR;
-import static com.pawandubey.griffin.DirectoryCrawler.ROOT_DIRECTORY;
+import static com.pawandubey.griffin.DirectoryStructure.*;
 
 public class MVStoreCacherImpl implements Cacher {
-	public static final String CACHE_PATH = ROOT_DIRECTORY + FILE_SEPARATOR + "cache.db";
+	public static final String CACHE_PATH = DirectoryStructure.getInstance().ROOT_DIRECTORY + FILE_SEPARATOR + "cache.db";
 	private final MVStore mvStore;
 	private final MVMap<String, byte[]> mainMap;
 
 	public MVStoreCacherImpl() {
 
-		final Path root = Paths.get(ROOT_DIRECTORY);
+		final Path root = Paths.get(DirectoryStructure.getInstance().ROOT_DIRECTORY);
 		if (!Files.exists(root)) {
 			try {
 				Files.createDirectory(root);
