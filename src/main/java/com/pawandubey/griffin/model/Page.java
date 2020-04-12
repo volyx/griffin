@@ -36,6 +36,7 @@ public class Page implements Parsable {
     private final String location;
     private String content;
     private String excerpt;
+    private String data;
     private final String slug;
     private final String layout;
     private String permalink;
@@ -54,16 +55,19 @@ public class Page implements Parsable {
      * @param lay
      * @param tag
      */
-    public Page(String titl, String auth, Path loc, String cont,
+    public Page(String titl, String auth, String loc,
+                String cont,
+                String data,
                 String img, String slu, String lay, List<String> tag) {
         author = auth;
         title = titl;
-        location = loc.toString();
+        location = loc;
         content = cont;
+        this.data = data;
         slug = slu;
         layout = lay;
         tags = tag;
-        featuredImage = img;        
+        featuredImage = img;
     }
 
     /**
@@ -86,8 +90,8 @@ public class Page implements Parsable {
      * @return the location
      */
     @Override
-    public Path getLocation() {
-        return Paths.get(location);
+    public String getLocation() {
+        return location;
     }
 
     /**
@@ -157,6 +161,11 @@ public class Page implements Parsable {
     @Override
     public List<String> getTags() {
         return tags;
+    }
+
+    @Override
+    public String getData() {
+        return data;
     }
 
     /**

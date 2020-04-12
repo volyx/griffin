@@ -1,3 +1,0 @@
-#/tmp/19.2.0/graalvm-ce-19.2.0/Contents/Home/bin/native-image
-/tmp/19.2.0/graalvm-ce-19.2.0/Contents/Home/bin/java -agentlib:native-image-agent=config-merge-dir=./src/main/resources/META-INF/native-image -jar ./build/libs/griffin-all.jar new . -n 'hello2'
-#/tmp/19.2.0/graalvm-ce-19.2.0/Contents/Home/bin/java -agentlib:native-image-agent=config-output-dir=./src/main/resources/config.json -jar ./build/libs/griffin-all.jar preview

@@ -16,14 +16,16 @@
 package com.pawandubey.griffin.model;
 
 import com.pawandubey.griffin.Data;
-import static com.pawandubey.griffin.Data.config;
-import static com.pawandubey.griffin.DirectoryCrawler.EXCERPT_MARKER;
-import static com.pawandubey.griffin.DirectoryCrawler.SOURCE_DIRECTORY;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import static com.pawandubey.griffin.Data.config;
+import static com.pawandubey.griffin.DirectoryCrawler.EXCERPT_MARKER;
+import static com.pawandubey.griffin.DirectoryCrawler.SOURCE_DIRECTORY;
 
 /**
  *
@@ -37,6 +39,7 @@ public class Post implements Parsable {
     private final String author;
     private String excerpt;
     private final LocalDate date;
+    private String data;
     private final String prettyDate;
     private final String location;
     private String content;
@@ -52,7 +55,7 @@ public class Post implements Parsable {
      * @param titl the post title
      * @param auth the post author
      * @param dat the post date
-     * @param loc the post's Path
+     * @param location the post's Path
      * @param cont the post's content
      * @param image
      * @param slu the post slug
@@ -60,12 +63,15 @@ public class Post implements Parsable {
      * @param tag the list of tags
          */
     public Post(String titl, String auth, LocalDate dat,
-                Path loc, String cont, String image, String slu, String lay, List<String> tag) {
+                String location, String cont,
+                String data,
+                String image, String slu, String lay, List<String> tag) {
         title = titl;
         author = auth;
         date = dat;
+        this.data = data;
         prettyDate = date.format(DateTimeFormatter.ofPattern(config.getOutputDateFormat()));
-        location = loc.toString();
+        this.location = location;
         content = cont;
         slug = slu;
         layout = lay;
@@ -105,8 +111,8 @@ public class Post implements Parsable {
      * @return the location
      */
     @Override
-    public Path getLocation() {
-        return Paths.get(location);
+    public String getLocation() {
+        return location;
     }
 
     /**
@@ -172,6 +178,11 @@ public class Post implements Parsable {
     @Override
     public List<String> getTags() {
         return tags;
+    }
+
+    @Override
+    public String getData() {
+        return data;
     }
 
     /**

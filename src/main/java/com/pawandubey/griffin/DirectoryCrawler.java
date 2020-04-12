@@ -15,16 +15,10 @@
  */
 package com.pawandubey.griffin;
 
-import com.moandjiezana.toml.Toml;
-import static com.pawandubey.griffin.Configurator.LINE_SEPARATOR;
-import static com.pawandubey.griffin.Data.config;
-import com.pawandubey.griffin.model.Page;
+import com.pawandubey.griffin.model.Content;
 import com.pawandubey.griffin.model.Parsable;
-import com.pawandubey.griffin.model.Post;
-import static com.pawandubey.griffin.renderer.Renderer.templateRoot;
-import java.io.BufferedReader;
+
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -33,13 +27,11 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import static com.pawandubey.griffin.Data.config;
+import static com.pawandubey.griffin.renderer.Renderer.templateRoot;
 
 /**
  *
@@ -54,11 +46,8 @@ public class DirectoryCrawler {
     public static final String SOURCE_DIRECTORY = ROOT_DIRECTORY + FILE_SEPARATOR + "content";
     public static final String OUTPUT_DIRECTORY = ROOT_DIRECTORY + FILE_SEPARATOR + "output";
     public static final String INFO_FILE = ROOT_DIRECTORY + FILE_SEPARATOR + ".info";
-    public static String author = config.getSiteAuthor();
-    public final String HEADER_DELIMITER = "#####";
+
     public static final String TAG_DIRECTORY = OUTPUT_DIRECTORY + FILE_SEPARATOR + "tags";
-    private final StringBuilder header = new StringBuilder();
-    private final Toml toml = new Toml();
     public static final String EXCERPT_MARKER = "##more##";
 
     public DirectoryCrawler() {
@@ -82,7 +71,7 @@ public class DirectoryCrawler {
      * @param rootPath path to the content directory
      * @throws IOException the exception
      */
-    protected void readIntoQueue(Path rootPath) throws IOException, InterruptedException {
+    protected void readIntoQueue(Path rootPath) throws IOException {
 
         cleanOutputDirectory();
         copyTemplateAssets();
@@ -104,22 +93,17 @@ public class DirectoryCrawler {
 
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                try {
-                    Path resolvedPath = Paths.get(OUTPUT_DIRECTORY).resolve(rootPath.relativize(file));
+                Path resolvedPath = Paths.get(OUTPUT_DIRECTORY).resolve(rootPath.relativize(file));
 
-                    if (file.getFileName().toString().endsWith(".md")) {
+                if (file.getFileName().toString().endsWith(".md")) {
 
-                        Parsable parsable = createParsable(file);
-                        Data.fileQueue.put(parsable);
-                    }
-                    else {
-                        Files.copy(file, resolvedPath, StandardCopyOption.REPLACE_EXISTING);
-                    }
-
+                    Parsable parsable = Content.createParsable(file);
+                    Data.fileQueue.add(parsable);
                 }
-                catch (InterruptedException ex) {
-                    Logger.getLogger(DirectoryCrawler.class.getName()).log(Level.SEVERE, null, ex);
+                else {
+                    Files.copy(file, resolvedPath, StandardCopyOption.REPLACE_EXISTING);
                 }
+
                 return FileVisitResult.CONTINUE;
             }
 
@@ -143,7 +127,7 @@ public class DirectoryCrawler {
      * @param rootPath
      * @throws IOException the exception
      */
-    protected void fastReadIntoQueue(Path rootPath) throws IOException, InterruptedException {
+    protected void fastReadIntoQueue(Path rootPath) throws IOException {
         cleanOutputDirectory();
         copyTemplateAssets();
 
@@ -164,80 +148,32 @@ public class DirectoryCrawler {
 
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                try {
-                    LocalDateTime fileModified = LocalDateTime.ofInstant(Files.getLastModifiedTime(file).toInstant(), ZoneId.systemDefault());
-                    LocalDateTime lastParse = LocalDateTime.parse(InfoHandler.LAST_PARSE_DATE, InfoHandler.formatter);
-                    Path resolvedPath = Paths.get(OUTPUT_DIRECTORY).resolve(rootPath.relativize(file));
-                    if (file.getFileName().toString().endsWith(".md")) {
-                        if (fileModified.isAfter(lastParse)) {
-                            Parsable parsable = createParsable(file);
-                            Data.fileQueue.removeIf(p -> p.getPermalink().equals(parsable.getPermalink()));
-                            Data.fileQueue.put(parsable);
-                        }
+                LocalDateTime fileModified = LocalDateTime.ofInstant(Files.getLastModifiedTime(file).toInstant(), ZoneId.systemDefault());
+                LocalDateTime lastParse = LocalDateTime.parse(InfoHandler.LAST_PARSE_DATE, InfoHandler.formatter);
+                Path resolvedPath = Paths.get(OUTPUT_DIRECTORY).resolve(rootPath.relativize(file));
+                if (file.getFileName().toString().endsWith(".md")) {
+                    if (fileModified.isAfter(lastParse)) {
+                        Parsable parsable = Content.createParsable(file);
+                        Data.fileQueue.removeIf(p -> p.getPermalink().equals(parsable.getPermalink()));
+                        Data.fileQueue.add(parsable);
                     }
-                    else {
-                        Files.copy(file, resolvedPath, StandardCopyOption.REPLACE_EXISTING);
-                    }
-
                 }
-                catch (InterruptedException ex) {
-                    Logger.getLogger(DirectoryCrawler.class.getName()).log(Level.SEVERE, null, ex);
+                else {
+                    Files.copy(file, resolvedPath, StandardCopyOption.REPLACE_EXISTING);
                 }
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
                 return FileVisitResult.TERMINATE;
             }
 
             @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
                 return FileVisitResult.CONTINUE;
             }
         });
-    }
-
-    /**
-     * Creates an appropriate instance of a Parsable implementation depending
-     * upon the header of the file.
-     *
-     * @param file the path of the file from which to create a Parsable.
-     * @return the created Parsable.
-     */
-    private Parsable createParsable(Path file) {
-        try (BufferedReader br = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-            header.setLength(0);
-            String line;
-            while ((line = br.readLine()) != null && !line.equals(HEADER_DELIMITER)) {
-                header.append(line).append(LINE_SEPARATOR);
-            }
-            toml.parse(header.toString());
-            String title = toml.getString("title");
-            author = toml.getString("author") != null ? toml.getString("author") : author;
-            String date = toml.getString("date");
-            String slug = toml.getString("slug");
-            LocalDate publishDate = LocalDate.parse(date, DateTimeFormatter.ofPattern(config.getInputDateFormat()));
-            publishDate = LocalDate.parse(publishDate.format(DateTimeFormatter.ofPattern(config.getOutputDateFormat())), DateTimeFormatter.ofPattern(config.getOutputDateFormat()));
-            String layout = toml.getString("layout");
-            List<String> tag = toml.getList("tags");
-            String img = toml.getString("image");
-            StringBuilder content = new StringBuilder();
-            String[] halves;
-            while ((line = br.readLine()) != null) {
-                content.append(line).append(LINE_SEPARATOR);
-            }
-            if (layout.equals("post")) {
-                return new Post(title, author, publishDate, file, content.toString(), img, slug, layout, tag);
-            }
-            else {
-                return new Page(title, author, file, content.toString(), img, slug, layout, tag);
-            }
-        }
-        catch (IOException ex) {
-            Logger.getLogger(DirectoryCrawler.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
     }
 
     /**
@@ -245,7 +181,7 @@ public class DirectoryCrawler {
      *
      * @throws IOException When a file visit goes wrong
      */
-    private void cleanOutputDirectory() throws IOException, InterruptedException {
+    private static void cleanOutputDirectory() throws IOException {
         System.out.println("Cleaning up the output area...");
         Path pathToClean = Paths.get(OUTPUT_DIRECTORY).toAbsolutePath().normalize();
 
@@ -258,7 +194,7 @@ public class DirectoryCrawler {
             }
 
             @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
                 return FileVisitResult.TERMINATE;
             }
 
@@ -280,7 +216,7 @@ public class DirectoryCrawler {
      *
      * @throws IOException the exception
      */
-    private void copyTemplateAssets() throws IOException {
+    private static void copyTemplateAssets() throws IOException {
         System.out.println("Carefully copying the assests...");
         Path assetsPath = Paths.get(templateRoot, "assets");
         Path outputAssetsPath = Paths.get(OUTPUT_DIRECTORY, "assets");

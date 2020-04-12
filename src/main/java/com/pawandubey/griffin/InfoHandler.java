@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,7 +92,7 @@ public class InfoHandler {
      *
      * @param collection the queue of Parsables
      */
-    protected void findLatestPosts(BlockingQueue<Parsable> collection) {
+    protected void findLatestPosts(List<Parsable> collection) {
         collection.stream()
                 .filter(p -> p instanceof Post)
                 .sorted((a, b) -> {
@@ -106,7 +107,7 @@ public class InfoHandler {
      *
      * @param collection the queue of Parsables
      */
-    protected void findNavigationPages(BlockingQueue<Parsable> collection) {
+    protected void findNavigationPages(List<Parsable> collection) {
         collection.stream()
                 .filter(p -> p instanceof Page)
                 .filter(p -> p.getTags().contains("nav"))

@@ -15,20 +15,15 @@
  */
 package com.pawandubey.griffin.cache;
 
-import com.github.rjeschke.txtmark.Run;
+import com.pawandubey.griffin.model.Parsable;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 
 import java.io.File;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.pawandubey.griffin.Data.fileQueue;
-import static com.pawandubey.griffin.Data.tags;
 import static com.pawandubey.griffin.DirectoryCrawler.FILE_SEPARATOR;
 import static com.pawandubey.griffin.DirectoryCrawler.ROOT_DIRECTORY;
 
@@ -58,7 +53,7 @@ public class MapDbCacher implements Cacher {
 	 * Creates a cache of everything other than the fileQueue.
 	 */
 	@Override
-	public void cacheTaggedParsables() {
+	public void cacheTaggedParsables(ConcurrentMap<String, List<Parsable>> tags) {
 		ConcurrentMap<String, Object> mainMap = getMainMap();
 		mainMap.put("tags", tags);
 		db.commit();
@@ -68,19 +63,9 @@ public class MapDbCacher implements Cacher {
 	 * Caches the fileQueue before it goes for parsing.
 	 */
 	@Override
-	public void cacheFileQueue() {
+	public void cacheFileQueue(List<Parsable> fileQueue) {
 		ConcurrentMap<String, Object> mainMap = getMainMap();
 		mainMap.put("fileQueue", fileQueue);
-	}
-
-	/**
-	 * Fetches and returns the map from the cache.
-	 *
-	 * @return the cached map.
-	 */
-	@Override
-	public ConcurrentMap<String, Object> readFromCacheIfExists() {
-		return getMainMap();
 	}
 
 	private ConcurrentMap<String, Object> getMainMap() {
@@ -99,6 +84,16 @@ public class MapDbCacher implements Cacher {
 	@Override
 	public boolean cacheExists() {
 		return !getMainMap().isEmpty();
+	}
+
+	@Override
+	public ConcurrentMap<String, List<Parsable>> getTags() {
+		return (ConcurrentMap<String, List<Parsable>>) getMainMap().get("tags");
+	}
+
+	@Override
+	public List<Parsable> getFileQueue() {
+		return (List<Parsable>) getMainMap().get("fileQueue");
 	}
 
 }

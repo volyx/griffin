@@ -17,17 +17,11 @@ package com.pawandubey.griffin;
 
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
-import static com.pawandubey.griffin.Configurator.LINE_SEPARATOR;
-import static com.pawandubey.griffin.Data.config;
-import static com.pawandubey.griffin.Data.executorSet;
-import static com.pawandubey.griffin.Data.tags;
-import static com.pawandubey.griffin.DirectoryCrawler.OUTPUT_DIRECTORY;
-import static com.pawandubey.griffin.DirectoryCrawler.SOURCE_DIRECTORY;
-import static com.pawandubey.griffin.DirectoryCrawler.TAG_DIRECTORY;
 import com.pawandubey.griffin.model.Parsable;
 import com.pawandubey.griffin.model.Post;
 import com.pawandubey.griffin.renderer.HandlebarsRenderer;
 import com.pawandubey.griffin.renderer.Renderer;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -39,7 +33,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +41,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static com.pawandubey.griffin.Configurator.LINE_SEPARATOR;
+import static com.pawandubey.griffin.Data.*;
+import static com.pawandubey.griffin.DirectoryCrawler.*;
 
 /**
  *
@@ -60,7 +57,6 @@ public class Parser {
     private final Renderer renderer;
     private String parsedContent;
     private Lock lock = new ReentrantLock();
-    private int i = 0;
 
     /**
      * creates a parser with configuration set to enable safe mode HTML with
@@ -85,12 +81,10 @@ public class Parser {
      * Parses the collection of files in the queue to produce HTML output
      *
      * @param collection the queue of files to be parsed
-     * @throws InterruptedException the exception
      * @throws java.io.IOException the exception
      */
-    protected void parse(BlockingQueue<Parsable> collection) throws InterruptedException, IOException {
+    protected void parse(List<Parsable> collection) throws IOException {
         Parsable p;
-        String content;
         if (config.getRenderTags() && Files.notExists(Paths.get(TAG_DIRECTORY))) {
             Files.createDirectory(Paths.get(TAG_DIRECTORY));
         }
@@ -104,7 +98,7 @@ public class Parser {
             }
         }
         while (!collection.isEmpty()) {
-            p = collection.take();
+            p = collection.remove(0);
             writeParsedFile(p);
             renderTags();
         }
@@ -317,13 +311,12 @@ public class Parser {
 
     private Path resolveHtmlPath(Parsable p) throws IOException {
         String name = p.getSlug();
-        Path parsedDirParent = Paths.get(OUTPUT_DIRECTORY).resolve(Paths.get(SOURCE_DIRECTORY).relativize(p.getLocation().getParent()));
-        Path parsedDir = parsedDirParent.resolve(name);
+//        Path parsedDirParent = Paths.get(OUTPUT_DIRECTORY).resolve(Paths.get(SOURCE_DIRECTORY).resolve(p.getLocation()));
+        Path parsedDir = Paths.get(OUTPUT_DIRECTORY).resolve(Paths.get(SOURCE_DIRECTORY).resolve(name));
         if (Files.notExists(parsedDir)) {
             Files.createDirectory(parsedDir);
         }
-        Path htmlPath = parsedDir.resolve("index.html");
-        return htmlPath;
+        return parsedDir.resolve("index.html");
 
     }
 

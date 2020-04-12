@@ -1,21 +1,27 @@
 package com.pawandubey.griffin.cache;
 
+import com.pawandubey.griffin.model.Parsable;
+
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 public interface Cacher {
 
 
 	static Cacher getCacher() {
-		return new MVStoreCacherImpl();
+		return new SqliteCacher();
+//		return new MVStoreCacherImpl();
 //		return new MapDbCacher();
 //		return new SimpleCacher();
 	}
 
-	void cacheTaggedParsables();
+	void cacheTaggedParsables(ConcurrentMap<String, List<Parsable>> tags);
 
-	void cacheFileQueue();
-
-	ConcurrentMap<String, Object> readFromCacheIfExists();
+	void cacheFileQueue(List<Parsable> fileQueue);
 
 	boolean cacheExists();
+
+	ConcurrentMap<String, List<Parsable>> getTags();
+
+	List<Parsable> getFileQueue();
 }

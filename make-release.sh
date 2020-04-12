@@ -13,5 +13,5 @@ cd release && zip -r $NAME .
 cd .. && mv release/$NAME .
 
 #remove the copied jar from release
-#rm release/griffin-all.jar
+#rm release/griffin
 rm release/griffin

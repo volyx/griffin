@@ -61,7 +61,7 @@ public class Configurator {
     private String outputDir = "output";
     private List<String> excludeDirs;
     private String inputDateFormat = "yyyy MM dd";
-    private String outputDateFormat;
+    private String outputDateFormat = "yyyy MM dd";
     private String theme = "wells";
     private Integer port = 9090;
     private Social social;

@@ -16,7 +16,6 @@
 package com.pawandubey.griffin;
 
 import com.pawandubey.griffin.cache.Cacher;
-import com.pawandubey.griffin.cache.MapDbCacher;
 import com.pawandubey.griffin.cli.NewCommand;
 import com.pawandubey.griffin.cli.PreviewCommand;
 import com.pawandubey.griffin.cli.PublishCommand;
@@ -28,7 +27,6 @@ import picocli.CommandLine.ParameterException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
@@ -122,17 +120,15 @@ public class Griffin implements Runnable {
         if (cacher.cacheExists() && !rebuild) {
             System.out.println("Reading from the cache for your pleasure...");
             
-            ConcurrentMap<String, Object> map = cacher.readFromCacheIfExists();
-            ConcurrentMap<String, List<Parsable>> tag = (ConcurrentMap<String, List<Parsable>>) map.get("tags");
-            BlockingQueue<Parsable> qu = (BlockingQueue<Parsable>) map.get("fileQueue");
+            ConcurrentMap<String, List<Parsable>> tag = cacher.getTags();
+            List<Parsable> qu = cacher.getFileQueue();
             Data.fileQueue.addAll(qu);
             Data.tags.putAll(tag);
             int st = Data.fileQueue.size();
             System.out.println("Read " + st + " objects from the cache. Woohooo!!");
             crawler.fastReadIntoQueue(Paths.get(DirectoryCrawler.SOURCE_DIRECTORY).normalize());
             System.out.println("Found " + (Data.fileQueue.size() - st) + " new objects!");
-        }
-        else {            
+        } else {
             if (fastParse && !rebuild) {
                 crawler.fastReadIntoQueue(Paths.get(DirectoryCrawler.SOURCE_DIRECTORY).normalize());
             }
@@ -140,19 +136,17 @@ public class Griffin implements Runnable {
                 System.out.println("Rebuilding site from scratch...");
                 crawler.readIntoQueue(Paths.get(DirectoryCrawler.SOURCE_DIRECTORY).normalize());
             }          
-            
-            
-        }        
+        }
         info.findLatestPosts(fileQueue);
         info.findNavigationPages(fileQueue);
-        cacher.cacheFileQueue();
+        cacher.cacheFileQueue(fileQueue);
         System.out.println("Parsing " + Data.fileQueue.size() + " objects...");
         
         parser = new Parser();
         parser.parse(fileQueue);
         info.writeInfoFile();
         parser.shutDownExecutors();
-        cacher.cacheTaggedParsables();
+        cacher.cacheTaggedParsables(Data.tags);
         
         long end = System.currentTimeMillis();
         System.out.println("Time (hardly) taken: " + (end - start) + " ms");
@@ -167,6 +161,12 @@ public class Griffin implements Runnable {
         InternalServer server = new InternalServer(port);
         server.startPreview();
         server.openBrowser();
+
+        try {
+            Thread.currentThread().join();
+        } catch (InterruptedException e) {
+
+        }
     }
 
     private void initializeConfigurationSettings(Path path, String name) throws NumberFormatException, IOException {

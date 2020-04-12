@@ -17,7 +17,6 @@ package com.pawandubey.griffin;
 
 import com.sun.net.httpserver.HttpServer;
 
-import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,7 +24,6 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -53,7 +51,7 @@ public class InternalServer {
 		InetSocketAddress cd = new InetSocketAddress(port);
 		HttpServer server;
 		try {
-			server = HttpServer.create(cd, 8080);
+			server = HttpServer.create(cd, port);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
@@ -104,30 +102,37 @@ public class InternalServer {
 	 * Opens the system's default browser and tries to navigate to the URL at
 	 * which the server is operational.
 	 */
+
 	protected void openBrowser() {
 		String url = "http://localhost:" + port;
+		String os = System.getProperty("os.name").toLowerCase();
 
-		if (Desktop.isDesktopSupported()) {
-			Desktop desktop = Desktop.getDesktop();
-
-			if (desktop.isSupported(Desktop.Action.BROWSE)) {
-				try {
-					desktop.browse(new URI(url));
-				} catch (IOException | URISyntaxException e) {
-				}
-			} else {
-				openBrowserUsingXdg(url);
-			}
-		} else {
-			openBrowserUsingXdg(url);
-		}
-	}
-
-	private void openBrowserUsingXdg(String url) {
-		Runtime runtime = Runtime.getRuntime();
 		try {
-			runtime.exec("xdg-open " + url);
+			if (os.indexOf("win") >= 0) {
+				Runtime rt = Runtime.getRuntime();
+//			rt.exec("rundll32 url.dll,FileProtocolHandler " + url);
+				rt.exec("start \"" + url + "\"");
+			} else if (os.indexOf("mac") >= 0) {
+				Runtime rt = Runtime.getRuntime();
+				rt.exec("open " + url);
+			} else if (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0) {
+				Runtime rt = Runtime.getRuntime();
+				String[] browsers = {"chrome", "epiphany", "firefox", "mozilla", "konqueror",
+						"netscape", "opera", "links", "lynx"};
+
+				StringBuffer cmd = new StringBuffer();
+				for (int i = 0; i < browsers.length; i++)
+					if (i == 0)
+						cmd.append(String.format("%s \"%s\"", browsers[i], url));
+					else
+						cmd.append(String.format(" || %s \"%s\"", browsers[i], url));
+				// If the first didn't work, try the next browser and so on
+
+				rt.exec(new String[]{"sh", "-c", cmd.toString()});
+			}
 		} catch (IOException e) {
+			System.err.println("error open browser");
 		}
+
 	}
 }

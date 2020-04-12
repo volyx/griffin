@@ -6,6 +6,4 @@ module com.pawandubey.griffin {
 	requires txtmark;
 	requires toml4j;
 	requires jdk.httpserver;
-	requires java.desktop;
-
 }
