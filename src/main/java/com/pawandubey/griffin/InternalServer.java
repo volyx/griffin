@@ -64,6 +64,12 @@ public class InternalServer {
 				pathname = pathname + "index.html";
 			}
 			File file = new File(pathname).getCanonicalFile();
+
+			if (file.isDirectory()) {
+				pathname = pathname + "/index.html";
+				file = new File(pathname).getCanonicalFile();
+			}
+
 			if (!file.toPath().startsWith(root)) {
 				// Suspected path traversal attack: reject with 403 error.
 				String response = "403 (Forbidden)\n";

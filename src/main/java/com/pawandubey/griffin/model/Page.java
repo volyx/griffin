@@ -152,7 +152,7 @@ public class Page implements Parsable {
         this.content = cont.replace(EXCERPT_MARKER, "");
         int excInd = cont.indexOf(EXCERPT_MARKER);
 //        System.out.println(excInd);
-        excerpt = excInd > 0 ? cont.substring(0, excInd) : cont.substring(0, 255);
+        excerpt = excInd > 0 ? cont.substring(0, excInd) : cont.substring(0, Math.min(cont.length(), 255));
     }
 
     /**

@@ -15,11 +15,13 @@
  */
 package com.pawandubey.griffin.cli;
 
+import com.pawandubey.griffin.DirectoryStructure;
 import com.pawandubey.griffin.Griffin;
 import com.pawandubey.griffin.cache.Cacher;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import java.nio.file.Path;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,11 +37,19 @@ import static com.pawandubey.griffin.Data.config;
 public class PreviewCommand implements Callable<Integer> {
 
     @Option(names = {"--port", "-p"}, paramLabel = "<PORT>", description = "Port on which to launch the preview. Default to your configuredData. port.")
-    private Integer port = config.getPort();
+    private Integer port;
+
+    @Option(names = {"--source", "-s"}, description = "Filesystem path to read files relative from")
+    private Path source;
 
     @Override
     public Integer call() {
         try {
+            DirectoryStructure.create(source);
+            if (port == null) {
+                port = config.getPort();
+            }
+
             Griffin griffin = new Griffin(Cacher.getCacher());
             griffin.printAsciiGriffin();
             System.out.println("Starting preview on port " + port);
