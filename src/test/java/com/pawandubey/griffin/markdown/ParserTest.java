@@ -1,5 +1,6 @@
-package com.pawandubey.griffin;
+package com.pawandubey.griffin.markdown;
 
+import com.pawandubey.griffin.markdown.Parser;
 import com.pawandubey.griffin.model.Content;
 import com.pawandubey.griffin.model.Parsable;
 import org.junit.Test;

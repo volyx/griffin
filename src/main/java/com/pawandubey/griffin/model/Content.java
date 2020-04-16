@@ -24,7 +24,6 @@ public class Content {
 	public static final String HEADER_DELIMITER = "#####";
 	private static final StringBuilder header = new StringBuilder();
 	private static final Toml toml = new Toml();
-	public static String author = config.getSiteAuthor();
 
 	/**
 	 * Creates an appropriate instance of a Parsable implementation depending
@@ -51,10 +50,14 @@ public class Content {
 		while ((line = br.readLine()) != null && !line.equals(HEADER_DELIMITER)) {
 			header.append(line).append(LINE_SEPARATOR);
 		}
-
-		toml.parse(header.toString());
+		try {
+			toml.parse(header.toString());
+		} catch (Exception e) {
+			Logger.getLogger(Content.class.getName()).log(Level.SEVERE, "error parse " + relativePath, e);
+			throw new RuntimeException(e);
+		}
 		String title = toml.getString("title");
-		author = toml.getString("author") != null ? toml.getString("author") : author;
+		String author = toml.getString("author") != null ? toml.getString("author") : config.getSiteAuthor();
 		String date = toml.getString("date");
 		String slug = toml.getString("slug");
 		LocalDate publishDate = LocalDate.parse(date, DateTimeFormatter.ofPattern(config.getInputDateFormat()));

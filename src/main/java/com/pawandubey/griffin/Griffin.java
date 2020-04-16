@@ -19,6 +19,7 @@ import com.pawandubey.griffin.cache.Cacher;
 import com.pawandubey.griffin.cli.NewCommand;
 import com.pawandubey.griffin.cli.PreviewCommand;
 import com.pawandubey.griffin.cli.PublishCommand;
+import com.pawandubey.griffin.markdown.Parser;
 import com.pawandubey.griffin.model.Parsable;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -34,7 +35,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
 
 import static com.pawandubey.griffin.Configurator.LINE_SEPARATOR;

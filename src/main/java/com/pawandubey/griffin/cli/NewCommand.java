@@ -16,6 +16,7 @@
 package com.pawandubey.griffin.cli;
 
 import com.pawandubey.griffin.Griffin;
+import com.pawandubey.griffin.cache.Cacher;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -44,7 +45,7 @@ public class NewCommand implements Callable<Integer> {
 	public Integer call() {
 		try {
 
-			Griffin griffin = new Griffin(file.toPath().resolve(name));
+			Griffin griffin = new Griffin(Cacher.getCacher());
 			griffin.initialize(file.toPath(), name);
 			System.out.println("Successfully created new site.");
 		} catch (IOException ex) {

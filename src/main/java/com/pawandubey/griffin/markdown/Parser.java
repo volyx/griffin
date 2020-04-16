@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.pawandubey.griffin;
+package com.pawandubey.griffin.markdown;
 
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
+import com.pawandubey.griffin.DirectoryStructure;
+import com.pawandubey.griffin.Indexer;
+import com.pawandubey.griffin.SingleIndex;
 import com.pawandubey.griffin.model.Parsable;
 import com.pawandubey.griffin.model.Post;
 import com.pawandubey.griffin.renderer.HandlebarsRenderer;
@@ -44,7 +47,6 @@ import java.util.stream.Collectors;
 
 import static com.pawandubey.griffin.Configurator.LINE_SEPARATOR;
 import static com.pawandubey.griffin.Data.*;
-import static com.pawandubey.griffin.DirectoryStructure.*;
 
 /**
  *
@@ -83,7 +85,7 @@ public class Parser {
      * @param collection the queue of files to be parsed
      * @throws java.io.IOException the exception
      */
-    protected void parse(List<Parsable> collection) throws IOException {
+    public void parse(List<Parsable> collection) throws IOException {
         Parsable p;
         if (config.getRenderTags() && Files.notExists(Paths.get(DirectoryStructure.getInstance().TAG_DIRECTORY))) {
             Files.createDirectory(Paths.get(DirectoryStructure.getInstance().TAG_DIRECTORY));
@@ -238,7 +240,7 @@ public class Parser {
     /**
      * Shuts down all executors in the executorSet one by one gracefully.
      */
-    protected void shutDownExecutors() {
+    public void shutDownExecutors() {
         for (ExecutorService e : executorSet) {
             try {
                 e.shutdown();

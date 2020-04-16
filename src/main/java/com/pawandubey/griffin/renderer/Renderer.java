@@ -37,15 +37,15 @@ public interface Renderer {
                           + TEMPLATES_FOLDER_NAME
                           + DirectoryStructure.FILE_SEPARATOR + Data.config.getTheme();
 
-    public String renderParsable(Parsable p) throws IOException;
+    String renderParsable(Parsable p) throws IOException;
 
-    public String renderIndex(SingleIndex s) throws IOException;
+    String renderIndex(SingleIndex s) throws IOException;
 
-    public String renderTagIndex(String tag, List<Parsable> list) throws IOException;
+    String renderTagIndex(String tag, List<Parsable> list) throws IOException;
 
-    public String renderSitemap() throws IOException;
+    String renderSitemap() throws IOException;
 
-    public String renderRssFeed() throws IOException;
+    String renderRssFeed() throws IOException;
 
-    public String render404() throws IOException;
+    String render404() throws IOException;
 }
