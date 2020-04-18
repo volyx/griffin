@@ -33,6 +33,7 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
     - name: Build native
+      timeout-minutes: 5
       run: ./gradlew nativeImage
     - uses: actions/upload-artifact@v1
       with:
