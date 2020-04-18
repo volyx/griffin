@@ -31,7 +31,9 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: sh make-release.sh
+      run: ./gradlew build
+    - name: Build native
+      run: ./gradlew nativeImage
     - uses: actions/upload-artifact@v1
       with:
         name: Package
