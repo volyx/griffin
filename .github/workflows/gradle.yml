@@ -38,10 +38,9 @@ jobs:
       run: ./gradlew build
 
     - name: Install GraalVM
-    - uses: DeLaGuardo/setup-graalvm@3
+    - uses: DeLaGuardo/setup-graalvm@2.0
       with:
         graalvm-version: '19.3.0.java8'
-    - run: java -version
 
 #    - name: Install GraalVM native-image
 #      run: gu install native-image
