@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <!-- Ignore for all files except that one, which name ends with "package-info.java" -->
+    <suppress id="MissedElementsAreNonnullByDefault" files="^((?!package-info\.java$).)*$"/>
+
+    <!-- test -->
+    <suppress id="ConsolePrint" files=".*[\\/]src[\\/]test[\\/].*"/>
+    <suppress id="IllegalInstantiationOfString" files=".*[\\/]src[\\/]test[\\/].*"/>
+    <suppress checks="IllegalThrows" files=".*[\\/]src[\\/]test[\\/].*"/>
+    <suppress checks="MethodName" files=".*[\\/]src[\\/]test[\\/].*"/>
+<!--    <suppress checks="JavadocMethod" files=".*[\\/]src[\\/]test[\\/].*"/>-->
+<!--    <suppress checks="JavadocPackage" files=".*[\\/]src[\\/]test[\\/].*"/>-->
+<!--    <suppress checks="JavadocType" files=".*[\\/]src[\\/]test[\\/].*"/>-->
+
+    <!-- testFixtures -->
+    <suppress id="ConsolePrint" files=".*[\\/]src[\\/]testFixtures[\\/].*"/>
+    <suppress checks="JavadocMethod" files=".*[\\/]src[\\/]testFixtures[\\/].*"/>
+    <suppress checks="JavadocPackage" files=".*[\\/]src[\\/]testFixtures[\\/].*"/>
+    <suppress checks="JavadocType" files=".*[\\/]src[\\/]testFixtures[\\/].*"/>
+
+    <!-- docs -->
+    <suppress checks="LineLength" files="docs[\\/]generation[\\/]package-lock.json"/>
+    <suppress checks="LineLength" files="docs[\\/]modules[\\/]ROOT[\\/]pages[\\/].*\.adoc"/>
+    <suppress checks="LineLength" files="docs[\\/]generation[\\/]supplemental-ui[\\/]partials[\\/].*\.hbs"/>
+</suppressions>

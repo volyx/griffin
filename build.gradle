@@ -4,6 +4,7 @@ plugins {
     id 'application'
     id "com.palantir.graal" version "0.6.0-114-gfe95739"
     id 'com.github.johnrengelman.shadow' version '5.2.0'
+//    id 'checkstyle'
 }
 
 repositories {
@@ -56,6 +57,10 @@ jar {
 application {
     mainClassName = mainClassName
 }
+
+//checkstyle {
+//    toolVersion = '8.30'
+//}
 
 graal {
     mainClass mainClassName
