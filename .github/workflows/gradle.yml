@@ -37,13 +37,13 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
-#    - name: Install GraalVM
-#    - uses: DeLaGuardo/setup-graalvm@3
-#      with:
-#        graalvm-version: '19.3.0.java8'
-#
-#    - name: Install GraalVM native-image
-#      run: gu install native-image
+    - name: Install GraalVM
+    - uses: DeLaGuardo/setup-graalvm@3
+      with:
+        graalvm-version: '19.3.0.java8'
+
+    - name: Install GraalVM native-image
+      run: gu install native-image
 #
 #    - name: Build native
 #    - run: ./gradlew nativeImage --stacktrace
