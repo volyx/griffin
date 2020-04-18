@@ -12,8 +12,10 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-18.04]
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -33,4 +35,4 @@ jobs:
     - uses: actions/upload-artifact@v1
       with:
         name: Package
-        path: release
+        path: build/graal
