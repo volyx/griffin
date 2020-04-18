@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.pawandubey.griffin;
+package com.pawandubey.griffin.markdown;
 
 import com.github.rjeschke.txtmark.BlockEmitter;
 import static com.pawandubey.griffin.Configurator.LINE_SEPARATOR;

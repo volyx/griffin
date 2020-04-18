@@ -16,8 +16,8 @@
 package com.pawandubey.griffin.renderer;
 
 import com.pawandubey.griffin.Data;
-import static com.pawandubey.griffin.DirectoryCrawler.FILE_SEPARATOR;
-import static com.pawandubey.griffin.DirectoryCrawler.ROOT_DIRECTORY;
+
+import com.pawandubey.griffin.DirectoryStructure;
 import com.pawandubey.griffin.SingleIndex;
 import com.pawandubey.griffin.model.Parsable;
 import java.io.IOException;
@@ -33,19 +33,19 @@ public interface Renderer {
     //String ASSETS_FOLDER_NAME = "assets";
 
     String TEMPLATES_FOLDER_NAME = "themes";
-    String templateRoot = ROOT_DIRECTORY + FILE_SEPARATOR
+    String templateRoot = DirectoryStructure.getInstance().ROOT_DIRECTORY + DirectoryStructure.FILE_SEPARATOR
                           + TEMPLATES_FOLDER_NAME
-                          + FILE_SEPARATOR + Data.config.getTheme();
+                          + DirectoryStructure.FILE_SEPARATOR + Data.config.getTheme();
 
-    public String renderParsable(Parsable p) throws IOException;
+    String renderParsable(Parsable p) throws IOException;
 
-    public String renderIndex(SingleIndex s) throws IOException;
+    String renderIndex(SingleIndex s) throws IOException;
 
-    public String renderTagIndex(String tag, List<Parsable> list) throws IOException;
+    String renderTagIndex(String tag, List<Parsable> list) throws IOException;
 
-    public String renderSitemap() throws IOException;
+    String renderSitemap() throws IOException;
 
-    public String renderRssFeed() throws IOException;
+    String renderRssFeed() throws IOException;
 
-    public String render404() throws IOException;
+    String render404() throws IOException;
 }

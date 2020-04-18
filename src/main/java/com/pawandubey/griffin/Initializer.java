@@ -15,28 +15,17 @@
  */
 package com.pawandubey.griffin;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import org.zeroturnaround.zip.ZipUtil;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  *
  * @author Pawan Dubey pawandubey@outlook.com
  */
 public class Initializer {
-
-    private final String zipp;// = Paths.get(ClassLoader.getSystemClassLoader().getResource(".").getPath()).getParent().toString();
-
-    public Initializer() throws URISyntaxException {
-        Path jarRootPath;
-
-        jarRootPath = Paths.get(Initializer.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
-        zipp = jarRootPath.toAbsolutePath().toString();           
-        
-    }
 
     /**
      * Scaffolds out a new directory with the predefined Griffin directory
@@ -48,12 +37,22 @@ public class Initializer {
      * @throws java.io.IOException the exception
      */
     public Path scaffold(Path rootPath, String name) throws IOException {
-        //DirectoryCrawler.ROOT_DIRECTORY = rootPath.resolve(name).toAbsolutePath().normalize().toString();
-        unzipStructure(rootPath.resolve(name));
+        Path targetDir = rootPath.resolve(name);
+        if (!Files.exists(targetDir)) {
+            Files.createDirectory(targetDir);
+        }
+        try (ZipInputStream zipIn = new ZipInputStream(Initializer.class.getClassLoader().getResourceAsStream("scaffold.zip"))) {
+            for (ZipEntry ze; (ze = zipIn.getNextEntry()) != null; ) {
+                Path resolvedPath = targetDir.resolve(ze.getName());
+                if (ze.isDirectory()) {
+                    Files.createDirectory(resolvedPath);
+                } else {
+                    Files.createDirectories(resolvedPath.getParent());
+                    Files.copy(zipIn, resolvedPath);
+                }
+            }
+        }
         return rootPath.resolve(name);
     }
 
-    private void unzipStructure(Path path) throws IOException {
-        ZipUtil.unpack(new File(zipp + File.separator + "scaffold.zip"), path.toFile());
-    }
 }

@@ -41,9 +41,7 @@ public class Indexer {
      */
     public Indexer() {
         indexList = new ArrayList<>();
-        queue = new PriorityQueue<>((a, b) -> {
-            return b.getDate().compareTo(a.getDate());
-        });
+        queue = new PriorityQueue<>((a, b) -> b.getDate().compareTo(a.getDate()));
     }
 
     /**
@@ -51,14 +49,14 @@ public class Indexer {
      *
      * @return the list of SingleIndexes
      */
-    protected List<SingleIndex> getIndexList() {
+    public List<SingleIndex> getIndexList() {
         return this.indexList;
     }
 
     /**
      * Initializes the required number of indexes.
      */
-    protected void initIndexes() {
+    public void initIndexes() {
         for (int i = 0; i < totalIndexes; i++) {
             indexList.add(new SingleIndex(i + 1, i , i + 2));
         }
@@ -69,14 +67,14 @@ public class Indexer {
      *
      * @param p the parsable to be added
      */
-    protected void addToIndex(Parsable p) {
+    public void addToIndex(Parsable p) {
         queue.add(p);
     }
 
     /**
      * Sorts the index in the order of the date of publication of the posts.
      */
-    protected void sortIndexes() {
+    public void sortIndexes() {
         for (SingleIndex s : indexList) {
             for (int i = 0; i < postsPerIndex && !queue.isEmpty(); i++) {
                 s.getPosts().add(queue.remove());

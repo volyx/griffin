@@ -16,8 +16,9 @@
 package com.pawandubey.griffin.model;
 
 import com.pawandubey.griffin.Data;
+import com.pawandubey.griffin.DirectoryStructure;
+
 import static com.pawandubey.griffin.DirectoryCrawler.EXCERPT_MARKER;
-import static com.pawandubey.griffin.DirectoryCrawler.SOURCE_DIRECTORY;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -36,6 +37,7 @@ public class Page implements Parsable {
     private final String location;
     private String content;
     private String excerpt;
+    private String data;
     private final String slug;
     private final String layout;
     private String permalink;
@@ -54,16 +56,19 @@ public class Page implements Parsable {
      * @param lay
      * @param tag
      */
-    public Page(String titl, String auth, Path loc, String cont,
+    public Page(String titl, String auth, String loc,
+                String cont,
+                String data,
                 String img, String slu, String lay, List<String> tag) {
         author = auth;
         title = titl;
-        location = loc.toString();
+        location = loc;
         content = cont;
+        this.data = data;
         slug = slu;
         layout = lay;
         tags = tag;
-        featuredImage = img;        
+        featuredImage = img;
     }
 
     /**
@@ -86,8 +91,8 @@ public class Page implements Parsable {
      * @return the location
      */
     @Override
-    public Path getLocation() {
-        return Paths.get(location);
+    public String getLocation() {
+        return location;
     }
 
     /**
@@ -132,7 +137,7 @@ public class Page implements Parsable {
      */
     @Override
     public String getPermalink() {
-        Path parentDir = Paths.get(SOURCE_DIRECTORY).relativize(Paths.get(location).getParent());
+        Path parentDir = Paths.get(DirectoryStructure.getInstance().SOURCE_DIRECTORY).relativize(Paths.get(location).getParent());
         permalink = Data.config.getSiteBaseUrl().concat("/").concat(parentDir.resolve(getSlug()).toString()).concat("/");
         return permalink;
     }
@@ -147,7 +152,7 @@ public class Page implements Parsable {
         this.content = cont.replace(EXCERPT_MARKER, "");
         int excInd = cont.indexOf(EXCERPT_MARKER);
 //        System.out.println(excInd);
-        excerpt = excInd > 0 ? cont.substring(0, excInd) : cont.substring(0, 255);
+        excerpt = excInd > 0 ? cont.substring(0, excInd) : cont.substring(0, Math.min(cont.length(), 255));
     }
 
     /**
@@ -157,6 +162,11 @@ public class Page implements Parsable {
     @Override
     public List<String> getTags() {
         return tags;
+    }
+
+    @Override
+    public String getData() {
+        return data;
     }
 
     /**

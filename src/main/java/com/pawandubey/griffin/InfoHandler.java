@@ -30,7 +30,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.BlockingQueue;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -46,8 +46,12 @@ public class InfoHandler {
     public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
     static String LAST_PARSE_DATE;
 
-    public InfoHandler() {
-        try (BufferedReader br = Files.newBufferedReader(Paths.get(DirectoryCrawler.INFO_FILE),
+    public InfoHandler() throws IOException {
+        final Path infoFilePath = Paths.get(DirectoryStructure.getInstance().INFO_FILE);
+        if (!Files.exists(infoFilePath)) {
+            throw new IOException(DirectoryStructure.getInstance().INFO_FILE + " doesn't exist");
+        }
+        try (BufferedReader br = Files.newBufferedReader(infoFilePath,
                                                          StandardCharsets.UTF_8)) {
             LAST_PARSE_DATE = br.readLine();
         }
@@ -62,7 +66,7 @@ public class InfoHandler {
      * the latest posts.
      */
     protected void writeInfoFile() {
-        Path infoFilePath = Paths.get(DirectoryCrawler.INFO_FILE);
+        Path infoFilePath = Paths.get(DirectoryStructure.getInstance().INFO_FILE);
         try (BufferedWriter bw
                             = Files.newBufferedWriter(infoFilePath,
                                                       StandardCharsets.UTF_8,
@@ -87,13 +91,12 @@ public class InfoHandler {
      *
      * @param collection the queue of Parsables
      */
-    protected void findLatestPosts(BlockingQueue<Parsable> collection) {
+    protected void findLatestPosts(List<Parsable> collection) {
         collection.stream()
                 .filter(p -> p instanceof Post)
-                .sorted((a, b) -> {
-                    return b.getDate().compareTo(a.getDate());
-                }).limit(config.getIndexPosts())
-                .forEach(p -> Data.latestPosts.add(p));
+                .sorted((a, b) -> b.getDate().compareTo(a.getDate()))
+                .limit(config.getIndexPosts())
+                .forEach(Data.latestPosts::add);
 
     }
 
@@ -102,11 +105,11 @@ public class InfoHandler {
      *
      * @param collection the queue of Parsables
      */
-    protected void findNavigationPages(BlockingQueue<Parsable> collection) {
+    protected void findNavigationPages(List<Parsable> collection) {
         collection.stream()
                 .filter(p -> p instanceof Page)
                 .filter(p -> p.getTags().contains("nav"))
-                .forEach(p -> Data.navPages.add(p));
+                .forEach(Data.navPages::add);
     }
 
     /**
@@ -116,7 +119,6 @@ public class InfoHandler {
      * @return the string representation of the timestamp
      */
     private String calculateTimeStamp() {
-        LocalDateTime parseTime = LocalDateTime.now();
-        return parseTime.format(formatter);
+        return LocalDateTime.now().format(formatter);
     }
 }

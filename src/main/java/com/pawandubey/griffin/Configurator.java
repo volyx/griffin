@@ -31,8 +31,6 @@ import static com.pawandubey.griffin.ConfigurationKeys.SITE_TAGLINE;
 import static com.pawandubey.griffin.ConfigurationKeys.SOCIAL;
 import static com.pawandubey.griffin.ConfigurationKeys.SOURCE_DIR;
 import static com.pawandubey.griffin.ConfigurationKeys.THEME;
-import static com.pawandubey.griffin.DirectoryCrawler.FILE_SEPARATOR;
-import static com.pawandubey.griffin.DirectoryCrawler.ROOT_DIRECTORY;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -51,8 +49,6 @@ import java.util.Map;
  */
 public class Configurator {
 
-    private final String CONFIG_FILE = ROOT_DIRECTORY + FILE_SEPARATOR + "config.toml";
-
     private String siteName = "Your Own Griffin";
     private String siteTagline = "Not just another site";
     private String siteAuthor = "Admin";
@@ -61,7 +57,7 @@ public class Configurator {
     private String outputDir = "output";
     private List<String> excludeDirs;
     private String inputDateFormat = "yyyy MM dd";
-    private String outputDateFormat;
+    private String outputDateFormat = "yyyy MM dd";
     private String theme = "wells";
     private Integer port = 9090;
     private Social social;
@@ -72,9 +68,9 @@ public class Configurator {
 
     public Configurator() {
 
-        if (Files.exists(Paths.get(CONFIG_FILE))) {
+        if (Files.exists(Paths.get(DirectoryStructure.getInstance().CONFIG_FILE))) {
             Toml toml = new Toml();
-            toml.parse(new File(CONFIG_FILE));
+            toml.parse(new File(DirectoryStructure.getInstance().CONFIG_FILE));
             siteName = toml.getString(SITE_NAME.key);
             siteTagline = toml.getString(SITE_TAGLINE.key);
             siteAuthor = toml.getString(SITE_AUTHOR.key);

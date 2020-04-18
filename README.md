@@ -85,6 +85,7 @@ Options:
 
 That is basically it. You write all your content in markdown. And run `griffin publish` and see the magic happen.
 
+```
 
 ## License
 Copyright 2017 Pawan Dubey pawandubey@outlook.com.

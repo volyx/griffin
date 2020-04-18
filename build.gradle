@@ -1,0 +1,93 @@
+
+plugins {
+    id 'java'
+    id 'application'
+    id "com.palantir.graal" version "0.6.0-114-gfe95739"
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+//    id 'checkstyle'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+
+    compile "info.picocli:picocli:4.2.0"
+    compile "com.github.rjeschke:txtmark:0.13"
+    compile "com.moandjiezana.toml:toml4j:0.4.0"
+    compile "com.github.jknack:handlebars:4.1.2"
+    compile "org.slf4j:slf4j-simple:1.7.12"
+
+    compileOnly("com.oracle.substratevm:svm:${graalVMVersion}")
+    implementation("org.graalvm.sdk:graal-sdk:${graalVMVersion}")
+
+    // different stores
+    implementation("org.xerial:sqlite-jdbc:3.27.2")
+    implementation 'com.h2database:h2-mvstore:1.4.200'
+    compile 'org.mapdb:mapdb:3.0.8'
+
+
+//    compile 'org.graalvm.nativeimage:svm:19.3.1'
+
+    // Use JUnit Jupiter API for testing.
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
+    testCompile "junit:junit:4.10"
+
+    // Use JUnit Jupiter Engine for testing.
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
+
+    annotationProcessor 'info.picocli:picocli-codegen:4.2.0'
+
+}
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    options.compilerArgs += ["-Aproject=${project.name}"]
+}
+
+mainClassName = 'com.pawandubey.griffin.Griffin'
+
+jar {
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
+application {
+    mainClassName = mainClassName
+}
+
+//checkstyle {
+//    toolVersion = '8.30'
+//}
+
+graal {
+    mainClass mainClassName
+    graalVersion(graalVMVersion)
+    outputName(project.name)
+    option("-H:IncludeResources=db/.*|static/.*|templates/.*|.*.yml|.*.xml|.*/org/sqlite/.*|org/sqlite/.*")
+    option("--allow-incomplete-classpath")
+    option("--initialize-at-build-time=org.sqlite.JDBC")
+    option("--initialize-at-build-time=org.sqlite.core.DB\$ProgressObserver")
+    option("--initialize-at-build-time=org.sqlite.core.DB")
+    option("--initialize-at-build-time=org.sqlite.core.NativeDB")
+    option("--initialize-at-build-time=org.sqlite.ProgressHandler")
+    option("--initialize-at-build-time=org.sqlite.Function")
+    option("--initialize-at-build-time=org.sqlite.Function\$Aggregate")
+    option("--initialize-at-build-time=org.sqlite.Function\$Window")
+    option("-H:+AllowVMInspection")
+    option("-H:+ReportUnsupportedElementsAtRuntime")
+    option("-H:EnableURLProtocols=http")
+    option("-Dfile.encoding=UTF-8")
+    option("--no-server")
+    option("--no-fallback")
+}
+
+
+
+test {
+    useJUnitPlatform()
+}
+
+nativeImage.dependsOn build

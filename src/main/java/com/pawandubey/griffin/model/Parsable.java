@@ -28,27 +28,29 @@ import java.util.List;
  */
 public interface Parsable extends Serializable {
 
-    public String getContent();
+    String getContent();
 
-    public void setContent(String content);
+    void setContent(String content);
 
-    public String getExcerpt();
+    String getExcerpt();
 
-    public String getAuthor();
+    String getAuthor();
 
-    public Path getFeaturedImage();
+    Path getFeaturedImage();
 
-    public String getTitle();
+    String getTitle();
 
-    public LocalDate getDate();
+    LocalDate getDate();
 
-    public Path getLocation();
+    String getLocation();
 
-    public String getSlug();
+    String getSlug();
 
-    public String getLayout();
+    String getLayout();
 
-    public String getPermalink();
+    String getPermalink();
 
-    public List<String> getTags();
+    List<String> getTags();
+
+	String getData();
 }

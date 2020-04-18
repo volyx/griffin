@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.pawandubey.griffin;
+package com.pawandubey.griffin.markdown;
 
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
-import static com.pawandubey.griffin.Configurator.LINE_SEPARATOR;
-import static com.pawandubey.griffin.Data.config;
-import static com.pawandubey.griffin.Data.executorSet;
-import static com.pawandubey.griffin.Data.tags;
-import static com.pawandubey.griffin.DirectoryCrawler.OUTPUT_DIRECTORY;
-import static com.pawandubey.griffin.DirectoryCrawler.SOURCE_DIRECTORY;
-import static com.pawandubey.griffin.DirectoryCrawler.TAG_DIRECTORY;
+import com.pawandubey.griffin.DirectoryStructure;
+import com.pawandubey.griffin.Indexer;
+import com.pawandubey.griffin.SingleIndex;
 import com.pawandubey.griffin.model.Parsable;
 import com.pawandubey.griffin.model.Post;
 import com.pawandubey.griffin.renderer.HandlebarsRenderer;
 import com.pawandubey.griffin.renderer.Renderer;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -39,7 +36,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +44,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static com.pawandubey.griffin.Configurator.LINE_SEPARATOR;
+import static com.pawandubey.griffin.Data.*;
 
 /**
  *
@@ -60,7 +59,6 @@ public class Parser {
     private final Renderer renderer;
     private String parsedContent;
     private Lock lock = new ReentrantLock();
-    private int i = 0;
 
     /**
      * creates a parser with configuration set to enable safe mode HTML with
@@ -85,18 +83,16 @@ public class Parser {
      * Parses the collection of files in the queue to produce HTML output
      *
      * @param collection the queue of files to be parsed
-     * @throws InterruptedException the exception
      * @throws java.io.IOException the exception
      */
-    protected void parse(BlockingQueue<Parsable> collection) throws InterruptedException, IOException {
+    public void parse(List<Parsable> collection) throws IOException {
         Parsable p;
-        String content;
-        if (config.getRenderTags() && Files.notExists(Paths.get(TAG_DIRECTORY))) {
-            Files.createDirectory(Paths.get(TAG_DIRECTORY));
+        if (config.getRenderTags() && Files.notExists(Paths.get(DirectoryStructure.getInstance().TAG_DIRECTORY))) {
+            Files.createDirectory(Paths.get(DirectoryStructure.getInstance().TAG_DIRECTORY));
         }
-        if (Files.notExists(Paths.get(OUTPUT_DIRECTORY).resolve("SITEMAP.xml"))
+        if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("SITEMAP.xml"))
             && Files.exists(Paths.get(HandlebarsRenderer.templateRoot).resolve("SITEMAP.html"))) {
-            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(OUTPUT_DIRECTORY).resolve("SITEMAP.xml"), StandardCharsets.UTF_8)) {
+            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("SITEMAP.xml"), StandardCharsets.UTF_8)) {
                 bw.write(renderer.renderSitemap());
             }
             catch (IOException ex) {
@@ -104,7 +100,7 @@ public class Parser {
             }
         }
         while (!collection.isEmpty()) {
-            p = collection.take();
+            p = collection.remove(0);
             writeParsedFile(p);
             renderTags();
         }
@@ -117,29 +113,29 @@ public class Parser {
     private void renderIndexRssAnd404() throws IOException {
         List<SingleIndex> list = indexer.getIndexList();
 
-        if (Files.notExists(Paths.get(OUTPUT_DIRECTORY).resolve("index.html"))) {
-            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(OUTPUT_DIRECTORY).resolve("index.html"), StandardCharsets.UTF_8)) {
+        if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("index.html"))) {
+            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("index.html"), StandardCharsets.UTF_8)) {
                 bw.write(renderer.renderIndex(list.get(0)));
             }
             catch (IOException ex) {
                 Logger.getLogger(Parser.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        if (Files.notExists(Paths.get(OUTPUT_DIRECTORY, "page"))) {
-            Files.createDirectory(Paths.get(OUTPUT_DIRECTORY, "page"));
+        if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "page"))) {
+            Files.createDirectory(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "page"));
         }
         list.remove(0);
 
         for (SingleIndex s : list) {
-            Path secondaryIndexPath = Paths.get(OUTPUT_DIRECTORY, "page", "" + (list.indexOf(s) + 2));
+            Path secondaryIndexPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "page", "" + (list.indexOf(s) + 2));
             Files.createDirectory(secondaryIndexPath);
             try (BufferedWriter bw = Files.newBufferedWriter(secondaryIndexPath.resolve("index.html"), StandardCharsets.UTF_8)) {
                 bw.write(renderer.renderIndex(s));
             }
         }
 
-        if (Files.notExists(Paths.get(OUTPUT_DIRECTORY).resolve("feed.xml")) && Files.exists(Paths.get(HandlebarsRenderer.templateRoot).resolve("feed.htm;"))) {
-            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(OUTPUT_DIRECTORY).resolve("feed.xml"), StandardCharsets.UTF_8)) {
+        if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("feed.xml")) && Files.exists(Paths.get(HandlebarsRenderer.templateRoot).resolve("feed.htm;"))) {
+            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("feed.xml"), StandardCharsets.UTF_8)) {
                 bw.write(renderer.renderRssFeed());
             }
             catch (IOException ex) {
@@ -147,8 +143,8 @@ public class Parser {
             }
         }
 
-        if (Files.notExists(Paths.get(OUTPUT_DIRECTORY, "404.html")) && Files.exists(Paths.get(HandlebarsRenderer.templateRoot, "404.html"))) {
-            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(OUTPUT_DIRECTORY).resolve("404.html"), StandardCharsets.UTF_8)) {
+        if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "404.html")) && Files.exists(Paths.get(HandlebarsRenderer.templateRoot, "404.html"))) {
+            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("404.html"), StandardCharsets.UTF_8)) {
                 bw.write(renderer.render404());
             }
             catch (IOException ex) {
@@ -190,7 +186,7 @@ public class Parser {
             parts.stream()
                     .forEach(l -> tagExecutor.submit(() -> {
                 for (String a : l) {
-                    Path tagDir = Paths.get(TAG_DIRECTORY).resolve(a);
+                    Path tagDir = Paths.get(DirectoryStructure.getInstance().TAG_DIRECTORY).resolve(a);
                     if (Files.notExists(tagDir)) {
                         try {// (BufferedWriter bw = Files.newBufferedWriter(tagDir.resolve("index.html"), StandardCharsets.UTF_8)) {
                             Files.createDirectory(tagDir);
@@ -211,7 +207,7 @@ public class Parser {
                                     if (Files.notExists(slugPath)) {
                                         Files.createDirectory(slugPath);
                                         Path linkedFile = resolveHtmlPath(p);
-                                        Files.createSymbolicLink(slugPath.resolve("index.html"), Paths.get("/").resolve(Paths.get(OUTPUT_DIRECTORY)).relativize(linkedFile));
+                                        Files.createSymbolicLink(slugPath.resolve("index.html"), Paths.get("/").resolve(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY)).relativize(linkedFile));
                                     }
                                 }
                                 catch (IOException ex) {
@@ -244,7 +240,7 @@ public class Parser {
     /**
      * Shuts down all executors in the executorSet one by one gracefully.
      */
-    protected void shutDownExecutors() {
+    public void shutDownExecutors() {
         for (ExecutorService e : executorSet) {
             try {
                 e.shutdown();
@@ -292,7 +288,7 @@ public class Parser {
      *
      * @param p the Parsable instance
      */
-    private void writeParsedFile(Parsable p) throws IOException {
+     void writeParsedFile(Parsable p) throws IOException {
         Path htmlPath = resolveHtmlPath(p);
 
         if (config.getRenderTags() && p instanceof Post) {
@@ -307,8 +303,7 @@ public class Parser {
             }
             bw.write(renderer.renderParsable(p));
 
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(Parser.class
                     .getName()).log(Level.SEVERE, null, ex);
         }
@@ -317,13 +312,12 @@ public class Parser {
 
     private Path resolveHtmlPath(Parsable p) throws IOException {
         String name = p.getSlug();
-        Path parsedDirParent = Paths.get(OUTPUT_DIRECTORY).resolve(Paths.get(SOURCE_DIRECTORY).relativize(p.getLocation().getParent()));
-        Path parsedDir = parsedDirParent.resolve(name);
+//        Path parsedDirParent = Paths.get(OUTPUT_DIRECTORY).resolve(Paths.get(SOURCE_DIRECTORY).resolve(p.getLocation()));
+        Path parsedDir = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve(name);
         if (Files.notExists(parsedDir)) {
             Files.createDirectory(parsedDir);
         }
-        Path htmlPath = parsedDir.resolve("index.html");
-        return htmlPath;
+        return parsedDir.resolve("index.html");
 
     }
 
