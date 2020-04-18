@@ -6,7 +6,6 @@ import org.graalvm.nativeimage.hosted.RuntimeReflection;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.sql.Statement;
 
 @AutomaticFeature
 class ReflectionClasses implements Feature {
@@ -29,7 +28,6 @@ class ReflectionClasses implements Feature {
 	 */
 	static Class<?>[] getClasses(){
 		return new Class[]{
-			Statement[].class,
 		};
 	}
 

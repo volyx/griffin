@@ -48,8 +48,8 @@ class JNIReflectionClasses implements Feature {
 //			Function.Aggregate.class,
 //			Function.Window.class,
 //			org.sqlite.core.DB.ProgressObserver.class,
-			java.lang.Throwable.class,
-			boolean[].class
+//			java.lang.Throwable.class,
+//			boolean[].class
 		};
 	}
 
