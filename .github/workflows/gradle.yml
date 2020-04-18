@@ -34,7 +34,7 @@ jobs:
       run: ./gradlew build
     - name: Build native
       timeout-minutes: 5
-      run: ./gradlew nativeImage
+      run: ./gradlew nativeImage --info
     - uses: actions/upload-artifact@v1
       with:
         name: Package
