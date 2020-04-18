@@ -46,7 +46,7 @@ jobs:
       run: gu install native-image
 
     - name: Build native
-      run: ./gradlew nativeImage --stacktrace
+      run: ./gradlew nativeImage --info
 
     - name: Upload
       uses: actions/upload-artifact@v1

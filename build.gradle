@@ -64,7 +64,7 @@ nativeImage {
     arguments(
             "--no-fallback",
             "--enable-all-security-services",
-            "--initialize-at-run-time=com.example.runtime",
+//            "--initialize-at-run-time=com.example.runtime",
             "--report-unsupported-elements-at-runtime",
             "-H:EnableURLProtocols=http",
             "-H:+AllowVMInspection",
