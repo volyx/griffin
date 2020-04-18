@@ -29,13 +29,24 @@ jobs:
         path: ~/.gradle/caches
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
         restore-keys: ${{ runner.os }}-gradle
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+
     - name: Build with Gradle
       run: ./gradlew build
+
+    - name: Install GraalVM
+    - uses: DeLaGuardo/setup-graalvm@3
+      with:
+        graalvm-version: '19.3.0.java8' // GraalVM version, no pattern syntax available atm.
+
+    - name: Install GraalVM native-image
+      run: gu install native-image
+
     - name: Build native
-      run: ./gradlew nativeImage --stacktrace
+    - run: ./gradlew nativeImage --stacktrace
     - uses: actions/upload-artifact@v1
       with:
         name: Package
-        path: build/graal
+        path: build/native-image

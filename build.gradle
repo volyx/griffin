@@ -2,7 +2,7 @@
 plugins {
     id 'java'
     id 'application'
-    id "com.palantir.graal" version "0.6.0-114-gfe95739"
+    id "org.mikeneck.graalvm-native-image" version "0.3.0"
     id 'com.github.johnrengelman.shadow' version '5.2.0'
 //    id 'checkstyle'
 }
@@ -57,22 +57,23 @@ application {
 //    toolVersion = '8.30'
 //}
 
-graal {
-    mainClass mainClassName
-    graalVersion(graalVMVersion)
-    outputName(project.name)
-    option("-H:+AllowVMInspection")
-    option("-H:+ReportUnsupportedElementsAtRuntime")
-    option("-H:EnableURLProtocols=http")
-    option("-Dfile.encoding=UTF-8")
-//    option("--no-server")
-    option("--no-fallback")
+nativeImage {
+    setGraalVmHome(System.getProperty("java.home"))
+    setMainClass(mainClassName)
+    setExecutableName(project.name)
+    arguments(
+            "--no-fallback",
+            "--enable-all-security-services",
+            "--initialize-at-run-time=com.example.runtime",
+            "--report-unsupported-elements-at-runtime",
+            "-H:EnableURLProtocols=http",
+            "-H:+AllowVMInspection",
+            "-H:+ReportExceptionStackTraces",
+            "-Dfile.encoding=UTF-8"
+    )
 }
-
 
 
 test {
     useJUnitPlatform()
 }
-
-nativeImage.dependsOn build
