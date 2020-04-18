@@ -10,8 +10,6 @@ cp build/graal/griffin release/
 
 #zip the contents of release directory
 cd release && zip -r $NAME .
-cd .. && mv release/$NAME .
-
-#remove the copied jar from release
+#cd .. && mv release/$NAME .
+#
 #rm release/griffin
-rm release/griffin
