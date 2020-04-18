@@ -2,7 +2,6 @@ package com.pawandubey.griffin.model;
 
 import com.moandjiezana.toml.Toml;
 import com.pawandubey.griffin.DirectoryCrawler;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
