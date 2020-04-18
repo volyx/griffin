@@ -13,6 +13,7 @@ jobs:
   build:
 
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-18.04]
@@ -33,8 +34,7 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
     - name: Build native
-      timeout-minutes: 5
-      run: ./gradlew nativeImage --info
+      run: ./gradlew nativeImage --stacktrace
     - uses: actions/upload-artifact@v1
       with:
         name: Package
