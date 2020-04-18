@@ -37,8 +37,8 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
-    - name: Install GraalVM
-    - uses: DeLaGuardo/setup-graalvm@2.0
+    - name: Set up GraalVM
+      uses: DeLaGuardo/setup-graalvm@2.0
       with:
         graalvm-version: '19.3.0.java8'
 
