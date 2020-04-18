@@ -42,8 +42,8 @@ jobs:
       with:
         graalvm-version: '19.3.0.java8'
 
-    - name: Install GraalVM native-image
-      run: gu install native-image
+#    - name: Install GraalVM native-image
+#      run: gu install native-image
 #
 #    - name: Build native
 #    - run: ./gradlew nativeImage --stacktrace
