@@ -20,7 +20,7 @@ import static com.pawandubey.griffin.Configurator.LINE_SEPARATOR;
 import static com.pawandubey.griffin.Data.config;
 
 public class Content {
-	public static final String HEADER_DELIMITER = "#####";
+	public static final String HEADER_DELIMITER = "---";
 	private static final StringBuilder header = new StringBuilder();
 	private static final Toml toml = new Toml();
 
@@ -45,7 +45,12 @@ public class Content {
 	static Parsable parse(String relativePath, BufferedReader br) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		header.setLength(0);
-		String line;
+		String line = br.readLine();
+
+		if (!HEADER_DELIMITER.equals(line.trim())) {
+			throw new RuntimeException("should start with " + HEADER_DELIMITER);
+		}
+
 		while ((line = br.readLine()) != null && !line.equals(HEADER_DELIMITER)) {
 			header.append(line).append(LINE_SEPARATOR);
 		}
