@@ -8,3 +8,6 @@
  */
 
 rootProject.name = 'griffin'
+
+include 'core'
+
