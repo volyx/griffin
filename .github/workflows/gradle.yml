@@ -51,6 +51,9 @@ jobs:
     - name: Build native
       run: ./gradlew nativeImage --info
 
+    - name: Test command line
+      run: ./gradlew :tests:test
+
     - name: Upload
       uses: actions/upload-artifact@v1
       with:

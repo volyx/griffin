@@ -7,7 +7,7 @@
  * in the user manual at https://docs.gradle.org/6.2.1/userguide/multi_project_builds.html
  */
 
-rootProject.name = 'griffin'
+rootProject.name = 'griffin-parent'
 
-include 'core'
+include 'griffin', 'jygments', 'tests'
 

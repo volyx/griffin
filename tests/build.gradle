@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+}
+
+version 'unspecified'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    compile project(":griffin")
+
+    // Use JUnit Jupiter API for testing.
+    testImplementation('org.junit.jupiter:junit-jupiter:5.6.2')
+    testImplementation 'org.hamcrest:hamcrest:2.2'
+
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
