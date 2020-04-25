@@ -58,4 +58,4 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: Package
-        path: core/build/native-image
+        path: griffin/build/native-image
