@@ -80,7 +80,7 @@ public class Content {
 		if (layout.equals("post")) {
 			return new Post(title, author, publishDate, path, content.toString(), sb.toString(), img, slug, layout, tag);
 		} else {
-			return new Page(title, author, path, content.toString(), sb.toString(), img, slug, layout, tag);
+			return new Page(title, author, publishDate, path, content.toString(), sb.toString(), img, slug, layout, tag);
 		}
 	}
 	@Nullable
@@ -117,7 +117,7 @@ public class Content {
 		if (layout.equals("post")) {
 			return new Post(title, author, publishDate, path, content, sb.toString(), img, slug, layout, tag);
 		} else {
-			return new Page(title, author, path, content, sb.toString(), img, slug, layout, tag);
+			return new Page(title, author, publishDate, path, content, sb.toString(), img, slug, layout, tag);
 		}
 	}
 }

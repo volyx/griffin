@@ -38,10 +38,13 @@ public class PublishCommand implements Callable<Integer> {
 
     @Option(names = {"--quick", "-q"}, description = "Publish only the files which have changed since the last modification."
     )
-    private Boolean fastParse = false;
+    private boolean fastParse = false;
 
     @Option(names = {"--rebuild", "-r"}, description = "Rebuild the site from scratch. This may take time for more number of posts.")
-    private Boolean rebuild = false;
+    private boolean rebuild = false;
+
+    @Option(names = {"--verbose", "-v"}, description = "Verbose logging")
+    private boolean verbose = false;
 
     @Option(names = {"--source", "-s"}, description = "Filesystem path to read files relative from")
     private Path source;
@@ -52,7 +55,7 @@ public class PublishCommand implements Callable<Integer> {
             DirectoryStructure.create(source);
             Griffin griffin = new Griffin(Cacher.getCacher());
             griffin.printAsciiGriffin();
-            griffin.publish(fastParse, rebuild);
+            griffin.publish(fastParse, rebuild, verbose);
             System.out.println("All done for now! I will be bach!");
         }
         catch (IOException ex) {

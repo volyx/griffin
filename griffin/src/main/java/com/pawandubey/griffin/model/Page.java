@@ -35,6 +35,7 @@ public class Page implements Parsable {
     private final String title;
     private final String author;
     private final Path location;
+    private final LocalDate date;
     private String content;
     private String excerpt;
     private String data;
@@ -46,8 +47,7 @@ public class Page implements Parsable {
 
     /**
      * Creates a Page instance with the parameters.
-     *
-     * @param titl
+     *  @param titl
      * @param auth
      * @param loc
      * @param cont
@@ -56,12 +56,13 @@ public class Page implements Parsable {
      * @param lay
      * @param tag
      */
-    public Page(String titl, String auth, Path loc,
+    public Page(String titl, String auth, LocalDate dat, Path loc,
                 String cont,
                 String data,
                 String img, String slu, String lay, List<String> tag) {
         author = auth;
         title = titl;
+        date = dat;
         location = loc;
         content = cont;
         this.data = data;
@@ -118,7 +119,7 @@ public class Page implements Parsable {
 
     @Override
     public LocalDate getDate() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return date;
     }
 
     /**

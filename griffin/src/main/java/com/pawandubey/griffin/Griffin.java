@@ -134,9 +134,10 @@ public class Griffin implements Runnable {
      *
      * @param fastParse Do a fast incremental parse
      * @param rebuild Do force a full rebuild
+     * @param verbose
      * @throws IOException the exception
      */
-    public void publish(boolean fastParse, boolean rebuild) throws IOException {
+    public void publish(boolean fastParse, boolean rebuild, boolean verbose) throws IOException {
         long start = System.currentTimeMillis();
 
         if (cacher.cacheExists() && !rebuild) {
@@ -156,7 +157,7 @@ public class Griffin implements Runnable {
             }
             else {
                 System.out.println("Rebuilding site from scratch...");
-                crawler.readIntoQueue(Paths.get(DirectoryStructure.getInstance().SOURCE_DIRECTORY).normalize());
+//                crawler.readIntoQueue(Paths.get(DirectoryStructure.getInstance().SOURCE_DIRECTORY).normalize());
 
                 Path directory = Paths.get(DirectoryStructure.getInstance().ROOT_DIRECTORY);
 
@@ -171,6 +172,14 @@ public class Griffin implements Runnable {
                 );
 
             }          
+        }
+
+        parsables.sort(Comparator.comparing(Parsable::getDate));
+
+        if (verbose) {
+            for (Parsable parsable : parsables) {
+                System.out.println(parsable.getLocation() + "...");
+            }
         }
 
         cacher.cacheFileQueue(parsables);
@@ -426,7 +435,11 @@ public class Griffin implements Runnable {
 
         for (SingleIndex s : list) {
             Path secondaryIndexPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "page", "" + (list.indexOf(s) + 2));
-            Files.createDirectory(secondaryIndexPath);
+
+            if (Files.notExists(secondaryIndexPath)) {
+                Files.createDirectory(secondaryIndexPath);
+            }
+
             try (BufferedWriter bw = Files.newBufferedWriter(secondaryIndexPath.resolve("index.html"), StandardCharsets.UTF_8)) {
                 bw.write(renderer.renderIndex(s));
             }
