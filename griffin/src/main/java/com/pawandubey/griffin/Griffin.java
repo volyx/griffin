@@ -176,11 +176,7 @@ public class Griffin implements Runnable {
 
         parsables.sort(Comparator.comparing(Parsable::getDate));
 
-        if (verbose) {
-            for (Parsable parsable : parsables) {
-                System.out.println(parsable.getLocation() + "...");
-            }
-        }
+
 
         cacher.cacheFileQueue(parsables);
 
@@ -191,6 +187,16 @@ public class Griffin implements Runnable {
         Data.navPages.addAll(
                 ContentCollectors.findNavigationPages(parsables)
         );
+
+        if (verbose) {
+            for (Parsable parsable : parsables) {
+                System.out.println(parsable.getLocation() + "...");
+            }
+            System.out.println("latest posts...");
+            for (Parsable parsable : latestPosts) {
+                System.out.println(parsable.getLocation() + "...");
+            }
+        }
 
 
         System.out.println("Parsing " + Data.parsables.size() + " objects...");
@@ -218,9 +224,7 @@ public class Griffin implements Runnable {
                 .build();
         indexer.initIndexes();
 
-        Parsable p;
-        while (!parsables.isEmpty()) {
-            p = parsables.remove(0);
+        for (Parsable p : parsables) {
             writeParsedFile(p);
         }
 
