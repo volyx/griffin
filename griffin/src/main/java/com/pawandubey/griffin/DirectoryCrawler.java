@@ -52,53 +52,53 @@ public class DirectoryCrawler {
      * @param rootPath path to the content directory
      * @throws IOException the exception
      */
-    protected void readIntoQueue(Path rootPath) throws IOException {
-
-        cleanOutputDirectory();
-        copyTemplateAssets();
-
-        Files.walkFileTree(rootPath, new FileVisitor<Path>() {
-
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                Path correspondingOutputPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve(rootPath.relativize(dir));
-                if (config.getExcludeDirs().contains(dir.getFileName().toString())) {
-                    return FileVisitResult.SKIP_SUBTREE;
-                }
-                if (Files.notExists(correspondingOutputPath)) {
-                    Files.createDirectory(correspondingOutputPath);
-                }
-
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                Path resolvedPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve(rootPath.relativize(file));
-
-                if (file.getFileName().toString().endsWith(".md")) {
-
-                    Parsable parsable = Content.createParsable(file);
-                    Data.parsables.add(parsable);
-                }
-                else {
-                    Files.copy(file, resolvedPath, StandardCopyOption.REPLACE_EXISTING);
-                }
-
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                return FileVisitResult.TERMINATE;
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                return FileVisitResult.CONTINUE;
-            }
-        });
-    }
+//    protected void readIntoQueue(Path rootPath) throws IOException {
+//
+//        cleanOutputDirectory();
+//        copyTemplateAssets();
+//
+//        Files.walkFileTree(rootPath, new FileVisitor<Path>() {
+//
+//            @Override
+//            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+//                Path correspondingOutputPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve(rootPath.relativize(dir));
+//                if (config.getExcludeDirs().contains(dir.getFileName().toString())) {
+//                    return FileVisitResult.SKIP_SUBTREE;
+//                }
+//                if (Files.notExists(correspondingOutputPath)) {
+//                    Files.createDirectory(correspondingOutputPath);
+//                }
+//
+//                return FileVisitResult.CONTINUE;
+//            }
+//
+//            @Override
+//            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+//                Path resolvedPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve(rootPath.relativize(file));
+//
+//                if (file.getFileName().toString().endsWith(".md")) {
+//
+//                    Parsable parsable = Content.createParsable(file);
+//                    Data.parsables.add(parsable);
+//                }
+//                else {
+//                    Files.copy(file, resolvedPath, StandardCopyOption.REPLACE_EXISTING);
+//                }
+//
+//                return FileVisitResult.CONTINUE;
+//            }
+//
+//            @Override
+//            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+//                return FileVisitResult.TERMINATE;
+//            }
+//
+//            @Override
+//            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+//                return FileVisitResult.CONTINUE;
+//            }
+//        });
+//    }
 
     //TODO refactor this method to make use of the above method someway.
     /**
@@ -109,8 +109,8 @@ public class DirectoryCrawler {
      * @throws IOException the exception
      */
     protected void fastReadIntoQueue(Path rootPath) throws IOException {
-        cleanOutputDirectory();
-        copyTemplateAssets();
+//        cleanOutputDirectory();
+//        copyTemplateAssets();
 
         Files.walkFileTree(rootPath, new FileVisitor<Path>() {
 
@@ -157,76 +157,5 @@ public class DirectoryCrawler {
         });
     }
 
-    /**
-     * Cleans up the output directory before running the full parse.
-     *
-     * @throws IOException When a file visit goes wrong
-     */
-    private static void cleanOutputDirectory() throws IOException {
-        System.out.println("Cleaning up the output area...");
-        Path pathToClean = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).toAbsolutePath().normalize();
 
-        Files.walkFileTree(pathToClean, new SimpleFileVisitor<Path>() {
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                Files.delete(file);
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) {
-                return FileVisitResult.TERMINATE;
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                Files.delete(dir);
-                return FileVisitResult.CONTINUE;
-            }
-
-        });
-
-        Files.createDirectory(pathToClean);
-        System.out.println("Cleanup done.");
-    }
-
-    /**
-     * Copies the assets i.e images, CSS, JS etc needed by the theme to the
-     * output directory.
-     *
-     * @throws IOException the exception
-     */
-    private static void copyTemplateAssets() throws IOException {
-        System.out.println("Carefully copying the assests...");
-        Path assetsPath = Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY, "assets");
-        Path outputAssetsPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "assets");
-        if (Files.notExists(outputAssetsPath)) {
-            Files.createDirectory(outputAssetsPath);
-        }
-        Files.walkFileTree(assetsPath, new SimpleFileVisitor<Path>() {
-
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                Path correspondingOutputPath = outputAssetsPath.resolve(assetsPath.relativize(dir));
-                if (Files.notExists(correspondingOutputPath)) {
-                    Files.createDirectory(correspondingOutputPath);
-                }
-
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                Path resolvedPath = outputAssetsPath.resolve(assetsPath.relativize(file));
-
-                Files.copy(file, resolvedPath, StandardCopyOption.REPLACE_EXISTING);
-
-                return FileVisitResult.CONTINUE;
-            }
-
-        });
-
-        System.out.println("Copying done.");
-    }
 }

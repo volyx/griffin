@@ -29,6 +29,7 @@ import com.pawandubey.griffin.pipeline.ContentFilter;
 import com.pawandubey.griffin.pipeline.ContentParser;
 import com.pawandubey.griffin.pipeline.ContentRenderer;
 import com.pawandubey.griffin.pipeline.ContentWriter;
+import com.pawandubey.griffin.pipeline.DirectoryCleaner;
 import com.pawandubey.griffin.pipeline.FileCopier;
 import com.pawandubey.griffin.renderer.HandlebarsRenderer;
 import com.pawandubey.griffin.renderer.Renderer;
@@ -140,6 +141,10 @@ public class Griffin implements Runnable {
     public void publish(boolean fastParse, boolean rebuild, boolean verbose) throws IOException {
         long start = System.currentTimeMillis();
 
+        Path directory = Paths.get(DirectoryStructure.getInstance().ROOT_DIRECTORY);
+        Path content = directory.resolve(DirectoryStructure.getInstance().SOURCE_DIRECTORY);
+        Path output = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY);
+
         if (cacher.cacheExists() && !rebuild) {
             System.out.println("Reading from the cache for your pleasure...");
             
@@ -157,11 +162,28 @@ public class Griffin implements Runnable {
             }
             else {
                 System.out.println("Rebuilding site from scratch...");
-//                crawler.readIntoQueue(Paths.get(DirectoryStructure.getInstance().SOURCE_DIRECTORY).normalize());
 
-                Path directory = Paths.get(DirectoryStructure.getInstance().ROOT_DIRECTORY);
+                new DirectoryCleaner().accept(output);
 
-                Path content = directory.resolve(DirectoryStructure.getInstance().SOURCE_DIRECTORY);
+                Path assetsPath = Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY, "assets");
+                Path outputAssetsPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "assets");
+
+                if (Files.notExists(outputAssetsPath)) {
+                    Files.createDirectory(outputAssetsPath);
+                }
+                System.out.println("Carefully copying the assets...");
+                Files.walk(assetsPath)
+                        .forEach(new FileCopier(assetsPath, outputAssetsPath));
+
+                final Path images = content.resolve("images");
+                final Path outputImages = output.resolve("images");
+
+                if (Files.notExists(outputImages)) {
+                    Files.createDirectory(outputImages);
+                }
+
+                Files.walk(images)
+                        .forEach(new FileCopier(images, outputImages));
 
                 // Compile the markdown files
                 Data.parsables.addAll(
@@ -175,8 +197,6 @@ public class Griffin implements Runnable {
         }
 
         parsables.sort(Comparator.comparing(Parsable::getDate));
-
-
 
         cacher.cacheFileQueue(parsables);
 
@@ -198,15 +218,13 @@ public class Griffin implements Runnable {
             }
         }
 
-
         System.out.println("Parsing " + Data.parsables.size() + " objects...");
 
+        renderer = new HandlebarsRenderer();
 
-         renderer = new HandlebarsRenderer();
-
-        if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("SITEMAP.xml"))
+        if (Files.notExists(output.resolve("SITEMAP.xml"))
                 && Files.exists(Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY).resolve("SITEMAP.html"))) {
-            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("SITEMAP.xml"), StandardCharsets.UTF_8)) {
+            try (BufferedWriter bw = Files.newBufferedWriter(output.resolve("SITEMAP.xml"), StandardCharsets.UTF_8)) {
                 bw.write(renderer.renderSitemap());
             }
             catch (IOException ex) {
