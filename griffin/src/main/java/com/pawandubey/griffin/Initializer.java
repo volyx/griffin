@@ -41,7 +41,7 @@ public class Initializer {
         if (!Files.exists(targetDir)) {
             Files.createDirectory(targetDir);
         }
-        try (ZipInputStream zipIn = new ZipInputStream(Initializer.class.getClassLoader().getResourceAsStream("scaffold.zip"))) {
+        try (ZipInputStream zipIn = new ZipInputStream(ClassLoader.getSystemClassLoader().getResourceAsStream("scaffold.zip"))) {
             for (ZipEntry ze; (ze = zipIn.getNextEntry()) != null; ) {
                 Path resolvedPath = targetDir.resolve(ze.getName());
                 if (ze.isDirectory()) {
@@ -54,5 +54,4 @@ public class Initializer {
         }
         return rootPath.resolve(name);
     }
-
 }

@@ -17,6 +17,7 @@ package com.pawandubey.griffin.model;
 
 import com.pawandubey.griffin.Data;
 import com.pawandubey.griffin.DirectoryStructure;
+import com.pawandubey.griffin.Griffin;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,7 +26,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static com.pawandubey.griffin.Data.config;
-import static com.pawandubey.griffin.DirectoryCrawler.EXCERPT_MARKER;
 
 /**
  *
@@ -165,8 +165,8 @@ public class Post implements Parsable {
      */
     @Override
     public void setContent(String cont) {
-        this.content = cont.replace(EXCERPT_MARKER, "");
-        int excInd = cont.indexOf(EXCERPT_MARKER);
+        this.content = cont.replace(Griffin.EXCERPT_MARKER, "");
+        int excInd = cont.indexOf(Griffin.EXCERPT_MARKER);
 //        System.out.println(excInd);
         excerpt = excInd > 0 ? cont.substring(0, excInd)
                   : cont.length() >= 255 ? cont.substring(0, 255) : cont;

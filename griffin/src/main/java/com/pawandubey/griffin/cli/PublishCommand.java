@@ -15,7 +15,6 @@
  */
 package com.pawandubey.griffin.cli;
 
-import com.pawandubey.griffin.DirectoryCrawler;
 import com.pawandubey.griffin.DirectoryStructure;
 import com.pawandubey.griffin.Griffin;
 import com.pawandubey.griffin.cache.Cacher;

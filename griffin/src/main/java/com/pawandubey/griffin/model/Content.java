@@ -1,7 +1,6 @@
 package com.pawandubey.griffin.model;
 
 import com.moandjiezana.toml.Toml;
-import com.pawandubey.griffin.DirectoryCrawler;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -13,6 +12,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +37,7 @@ public class Content {
 		try (BufferedReader br = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
 			return parse(file, br);
 		} catch (IOException ex) {
-			Logger.getLogger(DirectoryCrawler.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(Content.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		return null;
 	}
@@ -88,7 +88,7 @@ public class Content {
 		try (BufferedReader br = new BufferedReader(new StringReader(content))) {
 			return parse(path, br);
 		} catch (IOException e) {
-			Logger.getLogger(DirectoryCrawler.class.getName()).log(Level.SEVERE, null, e);
+			Logger.getLogger(Content.class.getName()).log(Level.SEVERE, null, e);
 		}
 		return null;
 	}

@@ -31,7 +31,7 @@ public class SingleIndex {
     private final String currentPage;
     private final String previousPage;
     private final String nextPage;
-    private List<Parsable> posts;
+    private final List<Parsable> posts;
 
     /**
      * Creates a new index page with the current, previous and next index page

@@ -34,6 +34,7 @@ import static com.pawandubey.griffin.ConfigurationKeys.THEME;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -93,42 +94,42 @@ public class Configurator {
         }
     }
 
-    protected Configurator withSiteName(String name) {
+    public Configurator withSiteName(String name) {
         siteName = name;
         return this;
     }
 
-    protected Configurator withSiteTagline(String tagline) {
+    public Configurator withSiteTagline(String tagline) {
         siteTagline = tagline;
         return this;
     }
 
-    protected Configurator withSiteAuthour(String author) {
+    public Configurator withSiteAuthour(String author) {
         siteAuthor = author;
         return this;
     }
 
-    protected Configurator withDateFormat(String format) {
+    public Configurator withDateFormat(String format) {
         inputDateFormat = format;
         return this;
     }
 
-    protected Configurator withPort(Integer por) {
+    public Configurator withPort(Integer por) {
         port = por;
         return this;
     }
 
-    protected Configurator withSourceDir(String src) {
+    public Configurator withSourceDir(String src) {
         sourceDir = src;
         return this;
     }
 
-    protected Configurator withOutputDir(String out) {
+    public Configurator withOutputDir(String out) {
         outputDir = out;
         return this;
     }
 
-    protected void writeConfig(Path path) throws IOException {
+    public void writeConfig(Path path) {
         String conf = "#parsing details" + LINE_SEPARATOR
                       + "source = \"" + sourceDir + "\"" + LINE_SEPARATOR
                       + "output = \"" + outputDir + "\"" + LINE_SEPARATOR
@@ -165,9 +166,11 @@ public class Configurator {
 
         try (BufferedWriter br = Files.newBufferedWriter(path.resolve("config.toml"), StandardOpenOption.TRUNCATE_EXISTING)) {
             br.write(conf.trim());
+            Files.move(path.resolve("output"), path.resolve(this.outputDir), StandardCopyOption.REPLACE_EXISTING);
+            Files.move(path.resolve("content"), path.resolve(this.sourceDir), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        Files.move(path.resolve("output"), path.resolve(this.outputDir), StandardCopyOption.REPLACE_EXISTING);
-        Files.move(path.resolve("content"), path.resolve(this.sourceDir), StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**
@@ -191,7 +194,6 @@ public class Configurator {
         return siteAuthor;
     }
 
-    ;
     /**
      * @return the siteBaseUrl
      */

@@ -22,8 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -38,8 +36,7 @@ import java.util.stream.Collectors;
  */
 public class InfoHandler {
 
-    public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
-    static String LAST_PARSE_DATE;
+    static long LAST_PARSE_DATE;
 
     public InfoHandler() throws IOException {
         final Path infoFilePath = Paths.get(DirectoryStructure.getInstance().INFO_FILE);
@@ -48,7 +45,7 @@ public class InfoHandler {
         }
         try (BufferedReader br = Files.newBufferedReader(infoFilePath,
                                                          StandardCharsets.UTF_8)) {
-            LAST_PARSE_DATE = br.readLine();
+            LAST_PARSE_DATE = Long.parseLong(br.readLine());
         }
         catch (IOException ex) {
             Logger.getLogger(InfoHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -64,7 +61,7 @@ public class InfoHandler {
         Path infoFilePath = Paths.get(DirectoryStructure.getInstance().INFO_FILE);
 
         List<String> lines = new ArrayList<>();
-        lines.add(calculateTimeStamp());
+        lines.add(System.currentTimeMillis() + "");
 
         lines.addAll(Data.latestPosts.stream()
                 .map(p -> p.getLocation().toAbsolutePath().toString()).collect(Collectors.toSet()));
@@ -77,16 +74,5 @@ public class InfoHandler {
         catch (IOException ex) {
             Logger.getLogger(InfoHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-
-    /**
-     * Calculates the current time stamp according to the System's default
-     * timezone and formats it as per the given formatter.
-     *
-     * @return the string representation of the timestamp
-     */
-    private String calculateTimeStamp() {
-        return LocalDateTime.now().format(formatter);
     }
 }

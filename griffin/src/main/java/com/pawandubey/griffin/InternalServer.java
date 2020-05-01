@@ -15,11 +15,9 @@
  */
 package com.pawandubey.griffin;
 
-import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,9 +35,9 @@ import java.nio.file.Paths;
  * @author Pawan Dubey pawandubey@outlook.com
  */
 public class InternalServer {
-	private Integer port = 9090;
+	private Integer port;
 
-	protected InternalServer(Integer p) {
+	public InternalServer(Integer p) {
 		port = p;
 	}
 
@@ -47,7 +45,7 @@ public class InternalServer {
 	 * Creates and starts the server to serve the contents of OUTPUT_DIRECTORY on port
 	 * 9090.
 	 */
-	protected void startPreview() {
+	public void startPreview() {
 
 		InetSocketAddress cd = new InetSocketAddress(port);
 		HttpServer server;
@@ -111,7 +109,7 @@ public class InternalServer {
 	 * which the server is operational.
 	 */
 
-	protected void openBrowser() {
+	public void openBrowser() {
 		String url = "http://localhost:" + port;
 		String os = System.getProperty("os.name").toLowerCase();
 

@@ -18,7 +18,7 @@ package com.pawandubey.griffin.model;
 import com.pawandubey.griffin.Data;
 import com.pawandubey.griffin.DirectoryStructure;
 
-import static com.pawandubey.griffin.DirectoryCrawler.EXCERPT_MARKER;
+import static com.pawandubey.griffin.Griffin.EXCERPT_MARKER;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;

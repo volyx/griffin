@@ -17,6 +17,7 @@ package com.pawandubey.griffin.cli;
 
 import com.pawandubey.griffin.DirectoryStructure;
 import com.pawandubey.griffin.Griffin;
+import com.pawandubey.griffin.InternalServer;
 import com.pawandubey.griffin.cache.Cacher;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -50,10 +51,9 @@ public class PreviewCommand implements Callable<Integer> {
                 port = config.getPort();
             }
 
-            Griffin griffin = new Griffin(Cacher.getCacher());
-            griffin.printAsciiGriffin();
+            Griffin.printAsciiGriffin();
             System.out.println("Starting preview on port " + port);
-            griffin.preview(port);
+            preview(port);
         }
         catch (Exception ex) {
             Logger.getLogger(PublishCommand.class.getName()).log(Level.SEVERE, null, ex);
@@ -61,5 +61,22 @@ public class PreviewCommand implements Callable<Integer> {
         }
 
         return 0;
+    }
+
+    /**
+     * Creates the server and starts a preview at the given port
+     *
+     * @param port the port number for the server to run on.
+     */
+    public void preview(Integer port) {
+        InternalServer server = new InternalServer(port);
+        server.startPreview();
+        server.openBrowser();
+
+        try {
+            Thread.currentThread().join();
+        } catch (InterruptedException e) {
+
+        }
     }
 }
