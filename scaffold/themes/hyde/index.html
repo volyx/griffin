@@ -1,0 +1,25 @@
+{{>head this}}
+<body class="theme-base-0d layout-reverse">
+
+{{>sidebar this}}
+
+    <div class="content container">
+<div class="posts">
+ {{#index}}
+      {{#posts}}
+  <div class="post">
+    <h1 class="post-title">
+      <a href="{{permalink}}">
+        {{title}}
+      </a>
+    </h1> 
+    <span class="post-date">{{prettyDate}}</span>  
+  </div>
+  {{/posts}}
+    <a href={{index.previousPage}}>previous</a> / <a href={{index.nextPage}}>next</a>
+  {{/index}}
+</div>
+</div>
+
+  </body>
+</html>

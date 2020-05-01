@@ -3,3 +3,6 @@
 .vscode
 build
 .idea
+*.iml
+out
+griffin/**/*.zip

@@ -1,0 +1,21 @@
+<div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>{{config.siteName}}</h1>
+      <p class="lead">
+      {{config.siteTagline}} An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li><a href="/">Home</a> </li>
+      {{#data}}
+      {{#navPages}}
+      	<li><a href="{{permalink}}">{{title}}</a> </li>
+      {{/navPages}}
+      {{/data}}
+    </ul>
+
+    
+  </div>
+</div>

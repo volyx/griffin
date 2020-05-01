@@ -1,0 +1,10 @@
+{
+  "resources": [
+    {
+      "pattern": "scaffold.zip"
+    },
+    {
+      "pattern": "helpers.nashorn.js"
+    }
+  ]
+}

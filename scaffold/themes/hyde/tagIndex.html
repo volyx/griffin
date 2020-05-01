@@ -1,0 +1,24 @@
+{{>head this}}
+<body class="theme-base-0d layout-reverse">
+
+{{>sidebar this}}
+
+    <div class="content container">
+<h1>{{tag}}</h1>
+<div class="posts"> 
+      {{#posts}}
+  <div class="post">
+    <h1 class="post-title">
+      <a href="{{permalink}}">
+        {{title}}
+      </a>
+    </h1> 
+    <span class="post-date">{{prettyDate}}</span>  
+  </div>
+  {{/posts}}
+  
+</div>
+</div>
+
+  </body>
+</html>

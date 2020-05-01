@@ -9,5 +9,5 @@
 
 rootProject.name = 'griffin-parent'
 
-include 'griffin', 'jygments', 'tests'
+include 'griffin', 'scaffold', 'jygments', 'tests'
 

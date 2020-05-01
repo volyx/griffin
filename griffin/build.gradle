@@ -1,5 +1,6 @@
 
 plugins {
+    id 'base'
     id 'java'
     id 'application'
     id "org.mikeneck.graalvm-native-image" version "0.3.0"
@@ -52,6 +53,18 @@ jar {
 application {
     mainClassName = mainClassName
 }
+
+task packageScaffold(type: Zip) {
+    from "$projectDir/../scaffold"
+    exclude "build.gradle"
+//    into "$buildDir/toArchive"
+
+    archiveFileName = "scaffold.zip"
+    destinationDirectory = file("$projectDir/src/main/resources")
+}
+
+
+processResources.dependsOn packageScaffold
 
 //checkstyle {
 //    toolVersion = '8.30'

@@ -1,0 +1,32 @@
+#parsing details
+source = "content"
+output = "output"
+exclude = []
+
+#styling
+inputdate = "yyyy MM dd"
+outputdate = "MMM d yyyy"
+theme = "hyde"
+
+#render files as per tags?
+rendertags = false
+
+#preview
+port = 9090
+
+#social media details
+[social]
+	disqus = "your disqus shortcode"
+	fb = "your facebook profile id"
+	twitter = "your twitter handle"
+	github = "your github profile id"
+	gplus = "your google plus profile id"
+	so = "your stackoverflow profile id"
+
+#site details
+[site]
+	name = "Griffin"
+	tagline = "Roar And Fly"
+	author = "your awesome name"
+	baseurl = "http://localhost:9090"
+
