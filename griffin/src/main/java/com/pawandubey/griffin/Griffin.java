@@ -359,14 +359,12 @@ public class Griffin implements Runnable {
 							if (Files.notExists(slugPath)) {
 								Files.createDirectory(slugPath);
 
-								String name = p.getSlug();
-								Path parsedDir = output.resolve(name);
+								Path parsedDir = output.resolve(p.getSlug());
 								if (Files.notExists(parsedDir)) {
 									Files.createDirectory(parsedDir);
 								}
 
 								Path linkedFile = parsedDir.resolve("index.html");
-
 								Files.createSymbolicLink(slugPath.resolve("index.html"), Paths.get("/").resolve(output).relativize(linkedFile));
 							}
 						} catch (IOException ex) {

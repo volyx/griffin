@@ -73,8 +73,7 @@ public class InfoHandler {
             Files.write(infoFilePath, lines,  StandardCharsets.UTF_8,
                     StandardOpenOption.WRITE,
                     StandardOpenOption.TRUNCATE_EXISTING);
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(InfoHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

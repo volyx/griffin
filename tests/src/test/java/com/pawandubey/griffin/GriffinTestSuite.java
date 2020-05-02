@@ -10,12 +10,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -27,6 +26,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class GriffinTestSuite {
 
 	private static final Random RANDOM = new Random();
+
+	private static final String POST = "---\n" +
+			"layout = \"post\"\n" +
+			"title = \"Middle of the Linked List\"\n" +
+			"date = \"2020 04 12\"\n" +
+			"summary = \"Middle of the Linked List\"\n" +
+			"categories = \"leetcode\"\n" +
+			"\n" +
+			"---\n" +
+			"\n" +
+			"Given a non-empty\n";
 
 	@TempDir
 	File tempDir;
@@ -101,6 +111,77 @@ public class GriffinTestSuite {
 
 
 		System.out.println(FileAssert.printDirectoryTree(tempDir));;
+	}
+
+
+	@ParameterizedTest(name = "{0} publish")
+	@MethodSource("griffinProvider")
+	void initAndPublish(GriffinRun griffinRun) throws IOException, InterruptedException {
+
+		final File tempOut = createTempFile();
+		final File tempIn = createTempFile();
+		final File tempErr = createTempFile();
+
+		final String blogDirectory = "griffin-" + RANDOM.nextInt();
+
+		List<String> command = concat(griffinRun.command,
+				"new",
+				"-n",
+				blogDirectory,
+				tempDir.toPath().toAbsolutePath().toString()
+				);
+
+		Process griffinJar = new ProcessBuilder()
+				.directory(griffinRun.workDir)
+				.command(command)
+				.redirectOutput(tempOut)
+				.redirectInput(tempIn)
+				.redirectError(tempErr)
+				.start();
+
+		OutputStream os = griffinJar.getOutputStream();
+		try (PrintWriter writer=new PrintWriter(os)) {
+			writer.write("supername\n");
+		}
+
+
+		griffinJar.waitFor(2, TimeUnit.SECONDS);
+
+		System.out.println("in\n" + new String(Files.readAllBytes(tempOut.toPath())));
+		System.out.println("out\n" + new String(Files.readAllBytes(tempIn.toPath())));
+		System.out.println("err\n" + new String(Files.readAllBytes(tempErr.toPath())));
+
+		System.out.println(FileAssert.printDirectoryTree(tempDir));
+
+
+		Path first = tempDir.toPath().resolve(blogDirectory).resolve("content").resolve("2020-05-02-first.md");
+
+		Files.write(first, POST.getBytes(StandardCharsets.UTF_8));
+
+		command = concat(griffinRun.command,
+				"publish",
+				"--source",
+				tempDir.toPath().resolve(blogDirectory).toAbsolutePath().toString(),
+				"--verbose"
+		);
+
+		griffinJar = new ProcessBuilder()
+				.directory(griffinRun.workDir)
+				.command(command)
+				.redirectOutput(tempOut)
+				.redirectInput(tempIn)
+				.redirectError(tempErr)
+				.start();
+
+		griffinJar.waitFor(2, TimeUnit.SECONDS);
+
+		System.out.println("in\n" + new String(Files.readAllBytes(tempOut.toPath())));
+		System.out.println("out\n" + new String(Files.readAllBytes(tempIn.toPath())));
+		System.out.println("err\n" + new String(Files.readAllBytes(tempErr.toPath())));
+
+		Path firstHtml = tempDir.toPath().resolve(blogDirectory).resolve("content").resolve("2020-05-02-first").resolve("index.html");
+
+		Assertions.assertTrue(Files.exists(firstHtml));
 	}
 
 	private File createTempFile() throws IOException {
