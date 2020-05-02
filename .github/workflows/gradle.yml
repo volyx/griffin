@@ -55,13 +55,14 @@ jobs:
       run: ./gradlew :tests:test --console=plain
 
     - name: Upload
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: Package
         path: griffin/build/native-image
 
     - name: Upload Test Reports
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
+      if: failure()
       with:
         name: Test
         path: tests/build/reports
