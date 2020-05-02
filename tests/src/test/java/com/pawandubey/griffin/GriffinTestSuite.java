@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +30,7 @@ public class GriffinTestSuite {
 
 	private static final String POST = "---\n" +
 			"layout = \"post\"\n" +
-			"title = \"Middle of the Linked List\"\n" +
+			"title = \"first\"\n" +
 			"date = \"2020 04 12\"\n" +
 			"summary = \"Middle of the Linked List\"\n" +
 			"categories = \"leetcode\"\n" +
@@ -61,9 +62,7 @@ public class GriffinTestSuite {
 
 		griffinJar.waitFor(2, TimeUnit.SECONDS);
 
-		System.out.println("in\n" + new String(Files.readAllBytes(tempOut.toPath())));
-		System.out.println("out\n" + new String(Files.readAllBytes(tempIn.toPath())));
-		System.out.println("err\n" + new String(Files.readAllBytes(tempErr.toPath())));
+		printLogs(tempOut, tempIn, tempErr);
 
 
 		final String output = new String(Files.readAllBytes(tempOut.toPath()));
@@ -105,9 +104,7 @@ public class GriffinTestSuite {
 
 		griffinJar.waitFor(2, TimeUnit.SECONDS);
 
-		System.out.println("in\n" + new String(Files.readAllBytes(tempOut.toPath())));
-		System.out.println("out\n" + new String(Files.readAllBytes(tempIn.toPath())));
-		System.out.println("err\n" + new String(Files.readAllBytes(tempErr.toPath())));
+		printLogs(tempOut, tempIn, tempErr);
 
 
 		System.out.println(FileAssert.printDirectoryTree(tempDir));;
@@ -124,11 +121,13 @@ public class GriffinTestSuite {
 
 		final String blogDirectory = "griffin-" + RANDOM.nextInt();
 
+		final Path testDir = Files.createDirectory(tempDir.toPath().resolve(RANDOM.nextInt() + ""));
+
 		List<String> command = concat(griffinRun.command,
 				"new",
 				"-n",
 				blogDirectory,
-				tempDir.toPath().toAbsolutePath().toString()
+				testDir.toAbsolutePath().toString()
 				);
 
 		Process griffinJar = new ProcessBuilder()
@@ -147,21 +146,18 @@ public class GriffinTestSuite {
 
 		griffinJar.waitFor(2, TimeUnit.SECONDS);
 
-		System.out.println("in\n" + new String(Files.readAllBytes(tempOut.toPath())));
-		System.out.println("out\n" + new String(Files.readAllBytes(tempIn.toPath())));
-		System.out.println("err\n" + new String(Files.readAllBytes(tempErr.toPath())));
+		printLogs(tempOut, tempIn, tempErr);
 
-		System.out.println(FileAssert.printDirectoryTree(tempDir));
+		System.out.println(FileAssert.printDirectoryTree(testDir.toFile()));
 
+		Path first = testDir.resolve(blogDirectory).resolve("content").resolve("2020-05-02-first.md");
 
-		Path first = tempDir.toPath().resolve(blogDirectory).resolve("content").resolve("2020-05-02-first.md");
-
-		Files.write(first, POST.getBytes(StandardCharsets.UTF_8));
+		Files.write(first, POST.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
 		command = concat(griffinRun.command,
 				"publish",
 				"--source",
-				tempDir.toPath().resolve(blogDirectory).toAbsolutePath().toString(),
+				testDir.resolve(blogDirectory).toAbsolutePath().toString(),
 				"--verbose"
 		);
 
@@ -175,13 +171,19 @@ public class GriffinTestSuite {
 
 		griffinJar.waitFor(2, TimeUnit.SECONDS);
 
+		printLogs(tempOut, tempIn, tempErr);
+
+		System.out.println(FileAssert.printDirectoryTree(testDir.toFile()));
+
+		Path firstHtml = testDir.resolve(blogDirectory).resolve("output").resolve("first").resolve("index.html");
+
+		Assertions.assertTrue(Files.exists(firstHtml));
+	}
+
+	private static void printLogs(File tempOut, File tempIn, File tempErr) throws IOException {
 		System.out.println("in\n" + new String(Files.readAllBytes(tempOut.toPath())));
 		System.out.println("out\n" + new String(Files.readAllBytes(tempIn.toPath())));
 		System.out.println("err\n" + new String(Files.readAllBytes(tempErr.toPath())));
-
-		Path firstHtml = tempDir.toPath().resolve(blogDirectory).resolve("content").resolve("2020-05-02-first").resolve("index.html");
-
-		Assertions.assertTrue(Files.exists(firstHtml));
 	}
 
 	private File createTempFile() throws IOException {
