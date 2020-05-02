@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -81,11 +80,13 @@ public class GriffinTestSuite {
 		final File tempIn = createTempFile();
 		final File tempErr = createTempFile();
 
+		Path testDir = createTestDir();
+
 		List<String> command = concat(griffinRun.command,
 				"new",
 				"-n",
 				"griffin-" + RANDOM.nextInt(),
-				tempDir.toPath().toAbsolutePath().toString()
+				testDir.toAbsolutePath().toString()
 				);
 
 		final Process griffinJar = new ProcessBuilder()
@@ -107,7 +108,7 @@ public class GriffinTestSuite {
 		printLogs(tempOut, tempIn, tempErr);
 
 
-		System.out.println(FileAssert.printDirectoryTree(tempDir));;
+		System.out.println(FileAssert.printDirectoryTree(testDir.toFile()));;
 	}
 
 
@@ -119,10 +120,9 @@ public class GriffinTestSuite {
 		final File tempIn = createTempFile();
 		final File tempErr = createTempFile();
 
+		final Path testDir = createTestDir();
+
 		final String blogDirectory = "griffin-" + RANDOM.nextInt();
-
-		final Path testDir = Files.createDirectory(tempDir.toPath().resolve(RANDOM.nextInt() + ""));
-
 		List<String> command = concat(griffinRun.command,
 				"new",
 				"-n",
@@ -152,7 +152,11 @@ public class GriffinTestSuite {
 
 		Path first = testDir.resolve(blogDirectory).resolve("content").resolve("2020-05-02-first.md");
 
-		Files.write(first, POST.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+		if (Files.notExists(first)) {
+			Files.createFile(first);
+		}
+
+		Files.write(first, POST.getBytes(StandardCharsets.UTF_8));
 
 		command = concat(griffinRun.command,
 				"publish",
@@ -180,6 +184,12 @@ public class GriffinTestSuite {
 		Assertions.assertTrue(Files.exists(firstHtml));
 	}
 
+	private Path createTestDir() throws IOException {
+		final Path directory = Files.createDirectory(tempDir.toPath().resolve("temp-" + RANDOM.nextInt() + ""));
+		directory.toFile().deleteOnExit();
+		return directory;
+	}
+
 	private static void printLogs(File tempOut, File tempIn, File tempErr) throws IOException {
 		System.out.println("in\n" + new String(Files.readAllBytes(tempOut.toPath())));
 		System.out.println("out\n" + new String(Files.readAllBytes(tempIn.toPath())));
@@ -189,6 +199,7 @@ public class GriffinTestSuite {
 	private File createTempFile() throws IOException {
 		final Path temp = tempDir.toPath().resolve(RANDOM.nextInt() + "input.txt");
 		Assertions.assertTrue(temp.toFile().createNewFile());
+		temp.toFile().deleteOnExit();
 		return temp.toFile();
 	}
 
