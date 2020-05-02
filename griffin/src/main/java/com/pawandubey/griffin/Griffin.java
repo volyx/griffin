@@ -15,13 +15,10 @@
  */
 package com.pawandubey.griffin;
 
-import com.github.rjeschke.txtmark.Configuration;
-import com.github.rjeschke.txtmark.Processor;
 import com.pawandubey.griffin.cache.Cacher;
 import com.pawandubey.griffin.cli.NewCommand;
 import com.pawandubey.griffin.cli.PreviewCommand;
 import com.pawandubey.griffin.cli.PublishCommand;
-import com.pawandubey.griffin.markdown.JygmentsCodeEmitter;
 import com.pawandubey.griffin.model.Content;
 import com.pawandubey.griffin.model.Parsable;
 import com.pawandubey.griffin.model.Post;
@@ -39,8 +36,8 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.ParameterException;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -48,10 +45,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,8 +73,9 @@ public class Griffin implements Runnable {
 
 	public static final String VERSION = "0.3.1";
 	public static final String EXCERPT_MARKER = "##more##";
+
 	private Indexer indexer;
-	private Renderer renderer;
+
 
 	private Cacher cacher;
 
@@ -188,7 +186,7 @@ public class Griffin implements Runnable {
 
 		System.out.println("Parsing " + Data.parsables.size() + " objects...");
 
-		renderer = new HandlebarsRenderer();
+		Renderer renderer = new HandlebarsRenderer();
 
 		if (Files.notExists(output.resolve("SITEMAP.xml"))
 				&& Files.exists(Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY).resolve("SITEMAP.html"))) {
@@ -201,45 +199,32 @@ public class Griffin implements Runnable {
 
 		indexer = new Indexer();
 
-		Configuration renderConfig = Configuration.builder().enableSafeMode()
-				.forceExtentedProfile()
-				.setAllowSpacesInFencedCodeBlockDelimiters(true)
-				.setEncoding("UTF-8")
-//                .setCodeBlockEmitter(new CodeBlockEmitter())
-				.setCodeBlockEmitter(new JygmentsCodeEmitter())
-				.build();
+
 		indexer.initIndexes();
 
-		for (Parsable p : parsables) {
-			Path htmlPath = resolveHtmlPath(p);
-
-			try {
-				String parsedContent = Processor.process(p.getContent(), renderConfig);
-				p.setContent(parsedContent);
-				if (p instanceof Post) {
-					indexer.addToIndex(p);
-				}
-				Files.write(htmlPath, renderer.renderParsable(p).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
-			} catch (IOException ex) {
-				Logger.getLogger(Griffin.class
-						.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
+		parsables.stream()
+				.peek(p -> {
+					    if (p instanceof Post) {
+      						indexer.addToIndex(p);
+    					}
+				})
+				.map(new ContentRenderer(renderer))
+				.forEach(new ContentWriter(output));
 
 		if (config.getRenderTags()) {
 			Data.tags.putAll(
 					ContentCollectors.findTags(parsables)
 			);
 
-			if (Files.notExists(Paths.get(DirectoryStructure.getInstance().TAG_DIRECTORY))) {
-				Files.createDirectory(Paths.get(DirectoryStructure.getInstance().TAG_DIRECTORY));
+			if (Files.notExists(Paths.get(DirectoryStructure.getInstance().TAGS_DIRECTORY))) {
+				Files.createDirectory(Paths.get(DirectoryStructure.getInstance().TAGS_DIRECTORY));
 			}
 			renderTags();
 		}
 
 		indexer.sortIndexes();
 
-		renderIndexRssAnd404();
+		renderIndexRssAnd404(renderer);
 		InfoHandler info = new InfoHandler();
 
 		info.writeInfoFile();
@@ -248,64 +233,6 @@ public class Griffin implements Runnable {
 		long end = System.currentTimeMillis();
 		System.out.println("Time (hardly) taken: " + (end - start) + " ms");
 	}
-
-	/**
-	 * Parses the content of the site in the 'content' directory and produces
-	 * the output. It parses incrementally i.e it only parses the content which
-	 * has changed since the last parsing event if the fastParse variable is
-	 * true.
-	 *
-	 * @param fastParse Do a fast incremental parse
-	 * @param rebuild   Do force a full rebuild
-	 * @throws IOException the exception
-	 */
-	public void publish2(boolean fastParse, boolean rebuild) throws IOException {
-		long start = System.currentTimeMillis();
-
-		Path directory = Paths.get(DirectoryStructure.getInstance().ROOT_DIRECTORY);
-
-		Path config = directory.resolve("config.yaml");
-		Path assets = Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY).resolve("assets");
-		Path data = directory.resolve("data");
-		Path content = directory.resolve(DirectoryStructure.getInstance().SOURCE_DIRECTORY);
-		Path template = directory.resolve("layout");
-		Path output = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY);
-
-		System.out.println("Cleaning up the output area...");
-		if (Files.exists(output)) {
-			Files.walk(output)
-					.sorted(Comparator.reverseOrder())
-					.map(Path::toFile)
-					.forEach(File::delete);
-		}
-		System.out.println("Cleanup done.");
-
-		System.out.println("Rebuilding site from scratch...");
-
-		System.out.println("Carefully copying the assests...");
-		Path assetsPath = Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY, "assets");
-		Path outputAssetsPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "assets");
-		Files.walk(assetsPath).forEach(new FileCopier(assetsPath, outputAssetsPath));
-		System.out.println("Copying done.");
-
-
-		// Compile the markdown files
-		final List<Parsable> parsables = Files.walk(content)
-				.filter(new ContentFilter())
-				.map(new ContentParser(content))
-				.collect(Collectors.toList());
-
-
-		parsables.stream()
-				.map(new ContentRenderer(template))
-				.forEach(new ContentWriter(output));
-
-
-		long end = System.currentTimeMillis();
-		System.out.println("Time (hardly) taken: " + (end - start) + " ms");
-	}
-
-
 
 	public static void printAsciiGriffin() {
 		System.out.println("                       ___     ___                  ");
@@ -329,7 +256,7 @@ public class Griffin implements Runnable {
 	}
 
 
-	private void renderIndexRssAnd404() throws IOException {
+	private void renderIndexRssAnd404(Renderer renderer) throws IOException {
 		final List<SingleIndex> list = indexer.getIndexList();
 
 		if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("index.html"))) {
@@ -382,13 +309,16 @@ public class Griffin implements Runnable {
 	 * service.
 	 */
 	protected void renderTags() {
+		final Path output = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY);
+		final Path tagsPath = Paths.get(DirectoryStructure.getInstance().TAGS_DIRECTORY);
 		if (config.getRenderTags()) {
 			for (List<Parsable> l : tags.values()) {
 				l.sort((s, t) -> t.getDate().compareTo(s.getDate()));
 			}
 
-			for (String tag : tags.keySet()) {
-				Path tagDir = Paths.get(DirectoryStructure.getInstance().TAG_DIRECTORY).resolve(tag);
+			for (Map.Entry<String, List<Parsable>> entry : tags.entrySet()) {
+				String tag = entry.getKey();
+				Path tagDir = tagsPath.resolve(tag);
 				if (Files.notExists(tagDir)) {
 					try {// (BufferedWriter bw = Files.newBufferedWriter(tagDir.resolve("index.html"), StandardCharsets.UTF_8)) {
 						Files.createDirectory(tagDir);
@@ -398,40 +328,39 @@ public class Griffin implements Runnable {
 					}
 				}
 
-				List<Parsable> parsables = tags.get(tag);
-
-				for (Parsable p : parsables) {
+				for (Parsable p : entry.getValue()) {
 					Path slugPath = tagDir.resolve(p.getSlug());
 					if (Files.notExists(slugPath)) {
 						try {
 							if (Files.notExists(slugPath)) {
 								Files.createDirectory(slugPath);
-								Path linkedFile = resolveHtmlPath(p);
-								Files.createSymbolicLink(slugPath.resolve("index.html"), Paths.get("/").resolve(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY)).relativize(linkedFile));
+
+								String name = p.getSlug();
+								Path parsedDir = output.resolve(name);
+								if (Files.notExists(parsedDir)) {
+									Files.createDirectory(parsedDir);
+								}
+
+								Path linkedFile = parsedDir.resolve("index.html");
+
+								Files.createSymbolicLink(slugPath.resolve("index.html"), Paths.get("/").resolve(output).relativize(linkedFile));
 							}
 						} catch (IOException ex) {
 							Logger.getLogger(Griffin.class.getName()).log(Level.SEVERE, null, ex);
 						}
 					}
 				}
-				try (BufferedWriter bw = Files.newBufferedWriter(tagDir.resolve("index.html"), StandardCharsets.UTF_8)) {
-					bw.write(renderer.renderTagIndex(tag, parsables));
-				} catch (IOException ex) {
-					Logger.getLogger(Griffin.class.getName()).log(Level.SEVERE, null, ex);
+
+				HandlebarsRenderer renderer = null;
+				try {
+					renderer = new HandlebarsRenderer();
+					Files.write(tagDir.resolve("index.html"),  renderer.renderTagIndex(tag, parsables).getBytes(StandardCharsets.UTF_8));
+				} catch (IOException e) {
+					throw new UncheckedIOException(e);
 				}
 			}
 
 		}
-	}
-
-	private static Path resolveHtmlPath(Parsable p) throws IOException {
-		String name = p.getSlug();
-		Path parsedDir = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve(name);
-		if (Files.notExists(parsedDir)) {
-			Files.createDirectory(parsedDir);
-		}
-		return parsedDir.resolve("index.html");
-
 	}
 
 	//TODO refactor this method to make use of the above method someway.

@@ -1,16 +1,13 @@
 package com.pawandubey.griffin.pipeline;
 
 
-import com.github.jknack.handlebars.Context;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.context.MapValueResolver;
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
-import com.github.jknack.handlebars.io.CompositeTemplateLoader;
-import com.github.jknack.handlebars.io.FileTemplateLoader;
+import com.github.rjeschke.txtmark.Configuration;
+import com.github.rjeschke.txtmark.Processor;
+import com.pawandubey.griffin.markdown.JygmentsCodeEmitter;
 import com.pawandubey.griffin.model.Parsable;
+import com.pawandubey.griffin.renderer.Renderer;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.function.Function;
 
 /**
@@ -18,48 +15,39 @@ import java.util.function.Function;
  */
 public class ContentRenderer implements Function<Parsable, Parsable> {
 
-  private final Path templateDirectory;
+	private final Renderer renderer;
+	private Configuration renderConfig;
 
-  /**
-   * Creates a new {@ContentRenderer} with a template directory.
-   */
-  public ContentRenderer(Path templateDirectory) {
-    this.templateDirectory = templateDirectory;
-  }
+	/**
+	 * Creates a new {@ContentRenderer} with a template directory.
+	 */
+	public ContentRenderer(Renderer renderer) {
+		this.renderer = renderer;
+	}
 
-  /**
-   * {@code }
-   */
-  @Override
-  public Parsable apply(Parsable content) {
-//    try {
-//      var loader = new CompositeTemplateLoader(new FileTemplateLoader(this.templateDirectory.toFile()), new ClassPathTemplateLoader());
-//      var handlebars = new Handlebars(loader);
-//      handlebars.registerHelper("md", new MarkdownHelper());
-//      handlebars.setPrettyPrint(true);
-//      var layout = (String) content
-//          .headers
-//          .getOrDefault("layout", "default");
-//      var template = handlebars
-//          .compile(layout);
-//      var context = Context
-//          .newBuilder(content)
-//          .resolver(ContentResolver.INSTANCE, MapValueResolver.INSTANCE)
-//          .build();
-//      var result = template.apply(context);
-//      var html = content
-//          .path
-//          .getFileName()
-//          .toString()
-//          .replace(markdownExtension, htmlExtension);
-//      var path = content
-//          .path
-//          .resolveSibling(html);
-//      return new Content(path, content.headers, result);
-//    } catch (IOException e) {
-//      throw new RuntimeException(e);
-//    }
-    return null;
-  }
+	/**
+	 * {@code }
+	 */
+	@Override
+	public Parsable apply(Parsable parsable) {
+
+		renderConfig = Configuration.builder().enableSafeMode()
+				.forceExtentedProfile()
+				.setAllowSpacesInFencedCodeBlockDelimiters(true)
+				.setEncoding("UTF-8")
+//                .setCodeBlockEmitter(new CodeBlockEmitter())
+				.setCodeBlockEmitter(new JygmentsCodeEmitter())
+				.build();
+
+
+		String parsedContent = Processor.process(parsable.getContent(), renderConfig);
+		parsable.setContent(parsedContent);
+		try {
+			parsable.setContent(renderer.renderParsable(parsable));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return parsable;
+	}
 
 }

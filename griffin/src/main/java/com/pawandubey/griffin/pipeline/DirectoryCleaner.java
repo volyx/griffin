@@ -1,6 +1,7 @@
 package com.pawandubey.griffin.pipeline;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,7 +37,7 @@ public class DirectoryCleaner implements Consumer<Path> {
 			});
 			Files.createDirectory(pathToClean);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new UncheckedIOException(e);
 		}
 
 		System.out.println("Cleanup done.");

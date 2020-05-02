@@ -9,7 +9,7 @@ public class DirectoryStructure {
 	public String SOURCE_DIRECTORY = ROOT_DIRECTORY + FILE_SEPARATOR + "content";
 	public String OUTPUT_DIRECTORY = ROOT_DIRECTORY + FILE_SEPARATOR + "output";
 	public String INFO_FILE = ROOT_DIRECTORY + FILE_SEPARATOR + ".info";
-	public String TAG_DIRECTORY = OUTPUT_DIRECTORY + FILE_SEPARATOR + "tags";
+	public String TAGS_DIRECTORY = OUTPUT_DIRECTORY + FILE_SEPARATOR + "tags";
 
 	static String THEMES_FOLDER_NAME = "themes";
 	public String THEMES_DIRECTORY;
@@ -23,7 +23,7 @@ public class DirectoryStructure {
 		instance.SOURCE_DIRECTORY = instance.ROOT_DIRECTORY + FILE_SEPARATOR + "content";
 		instance.OUTPUT_DIRECTORY = instance.ROOT_DIRECTORY + FILE_SEPARATOR + "output";
 		instance.INFO_FILE = instance.ROOT_DIRECTORY + FILE_SEPARATOR + ".info";
-		instance.TAG_DIRECTORY = instance.OUTPUT_DIRECTORY + FILE_SEPARATOR + "tags";
+		instance.TAGS_DIRECTORY = instance.OUTPUT_DIRECTORY + FILE_SEPARATOR + "tags";
 		instance.THEMES_DIRECTORY = instance.ROOT_DIRECTORY + DirectoryStructure.FILE_SEPARATOR
 				+ THEMES_FOLDER_NAME
 				+ DirectoryStructure.FILE_SEPARATOR + Data.config.getTheme();

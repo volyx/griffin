@@ -3,6 +3,7 @@ package com.pawandubey.griffin.pipeline;
 import com.pawandubey.griffin.model.Parsable;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,11 +28,22 @@ public class ContentWriter implements Consumer<Parsable> {
    * {@inheritDoc}
    */
   @Override
-  public void accept(Parsable content) {
-    Path path = targetDirectory.resolve(content.getLocation());
+  public void accept(Parsable parsable) {
+
+    String name = parsable.getSlug();
+    Path parsedDir = targetDirectory.resolve(name);
+    if (Files.notExists(parsedDir)) {
+      try {
+        Files.createDirectory(parsedDir);
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+
+    Path path = parsedDir.resolve("index.html");
     try (Writer writer = writer(path)) {
-      writer.write(content.getBody());
-      System.out.println(String.format("Write %s", content.getLocation()));
+      writer.write(parsable.getContent());
+      System.out.println(String.format("Write %s", parsable.getSlug()));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

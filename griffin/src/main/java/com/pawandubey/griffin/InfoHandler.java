@@ -45,7 +45,11 @@ public class InfoHandler {
         }
         try (BufferedReader br = Files.newBufferedReader(infoFilePath,
                                                          StandardCharsets.UTF_8)) {
-            LAST_PARSE_DATE = Long.parseLong(br.readLine());
+            try {
+                LAST_PARSE_DATE = Long.parseLong(br.readLine());
+            } catch (NumberFormatException e) {
+                LAST_PARSE_DATE = 0;
+            }
         }
         catch (IOException ex) {
             Logger.getLogger(InfoHandler.class.getName()).log(Level.SEVERE, null, ex);
