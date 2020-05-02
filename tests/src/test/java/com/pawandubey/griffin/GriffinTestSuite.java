@@ -99,9 +99,10 @@ public class GriffinTestSuite {
 
 		OutputStream os = griffinJar.getOutputStream();
 		try (PrintWriter writer=new PrintWriter(os)) {
-			writer.write("supername\n");
+			writer.write("\n");
+			writer.write("\n");
+			writer.write("\n");
 		}
-
 
 		griffinJar.waitFor(2, TimeUnit.SECONDS);
 
@@ -139,8 +140,10 @@ public class GriffinTestSuite {
 				.start();
 
 		OutputStream os = griffinJar.getOutputStream();
-		try (PrintWriter writer=new PrintWriter(os)) {
-			writer.write("supername\n");
+		try (PrintWriter writer= new PrintWriter(os)) {
+			writer.write("\n");
+			writer.write("\n");
+			writer.write("\n");
 		}
 
 
