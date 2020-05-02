@@ -38,22 +38,21 @@ public class InfoHandler {
 
     static long LAST_PARSE_DATE;
 
-    public InfoHandler() throws IOException {
+    static {
         final Path infoFilePath = Paths.get(DirectoryStructure.getInstance().INFO_FILE);
         if (!Files.exists(infoFilePath)) {
-            throw new IOException(DirectoryStructure.getInstance().INFO_FILE + " doesn't exist");
+            throw new RuntimeException(DirectoryStructure.getInstance().INFO_FILE + " doesn't exist");
         }
         try (BufferedReader br = Files.newBufferedReader(infoFilePath,
-                                                         StandardCharsets.UTF_8)) {
-            try {
-                LAST_PARSE_DATE = Long.parseLong(br.readLine());
-            } catch (NumberFormatException e) {
-                LAST_PARSE_DATE = 0;
-            }
+                StandardCharsets.UTF_8)) {
+            LAST_PARSE_DATE = Long.parseLong(br.readLine());
         }
         catch (IOException ex) {
             Logger.getLogger(InfoHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public InfoHandler() {
 
     }
 
