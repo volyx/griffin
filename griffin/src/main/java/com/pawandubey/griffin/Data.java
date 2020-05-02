@@ -38,4 +38,8 @@ public class Data {
     public static final Configurator config = new Configurator();
     public static final ConcurrentMap<String, List<Parsable>> tags = new ConcurrentHashMap<>();
     public static final Data datum = new Data();
+
+    private Data() {
+
+    }
 }

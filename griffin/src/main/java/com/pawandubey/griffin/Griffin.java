@@ -19,7 +19,6 @@ import com.pawandubey.griffin.cache.Cacher;
 import com.pawandubey.griffin.cli.NewCommand;
 import com.pawandubey.griffin.cli.PreviewCommand;
 import com.pawandubey.griffin.cli.PublishCommand;
-import com.pawandubey.griffin.model.Content;
 import com.pawandubey.griffin.model.Parsable;
 import com.pawandubey.griffin.model.Post;
 import com.pawandubey.griffin.pipeline.ContentCollectors;
@@ -35,21 +34,17 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ParameterException;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -110,6 +105,9 @@ public class Griffin implements Runnable {
 		Path directory = Paths.get(DirectoryStructure.getInstance().ROOT_DIRECTORY);
 		Path content = directory.resolve(DirectoryStructure.getInstance().SOURCE_DIRECTORY);
 		Path output = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY);
+		Path themesPath = Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY);
+		Path assetsPath = themesPath.resolve("assets");
+		Path outputAssetsPath = output.resolve("assets");
 
 		if (cacher.cacheExists() && !rebuild) {
 			System.out.println("Reading from the cache for your pleasure...");
@@ -120,19 +118,30 @@ public class Griffin implements Runnable {
 			Data.tags.putAll(tag);
 			int st = Data.parsables.size();
 			System.out.println("Read " + st + " objects from the cache. Woohooo!!");
-			fastReadIntoQueue(Paths.get(DirectoryStructure.getInstance().SOURCE_DIRECTORY).normalize());
+
+			Data.parsables.addAll(
+					Files.walk(content)
+							.filter(new ContentFilter())
+							.filter(greaterThenLastModified())
+							.map(new ContentParser(content))
+							.collect(Collectors.toList())
+			);
+
 			System.out.println("Found " + (Data.parsables.size() - st) + " new objects!");
 		} else {
 			if (fastParse && !rebuild) {
-				fastReadIntoQueue(Paths.get(DirectoryStructure.getInstance().SOURCE_DIRECTORY).normalize());
+				Data.parsables.addAll(
+						Files.walk(content)
+								.filter(new ContentFilter())
+								.filter(greaterThenLastModified())
+								.map(new ContentParser(content))
+								.collect(Collectors.toList())
+				);
 			} else {
 				System.out.println("Rebuilding site from scratch...");
 
-				System.out.println("Carefully copying the assets...");
 				new DirectoryCleaner().accept(output);
-
-				Path assetsPath = Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY, "assets");
-				Path outputAssetsPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "assets");
+				System.out.println("Carefully copying the assets...");
 
 				if (Files.notExists(outputAssetsPath)) {
 					Files.createDirectory(outputAssetsPath);
@@ -158,11 +167,10 @@ public class Griffin implements Runnable {
 								.map(new ContentParser(content))
 								.collect(Collectors.toList())
 				);
-
 			}
 		}
 
-		parsables.sort(Comparator.comparing(Parsable::getDate));
+		Data.parsables.sort(Comparator.comparing(Parsable::getDate));
 
 		cacher.cacheFileQueue(parsables);
 
@@ -186,20 +194,17 @@ public class Griffin implements Runnable {
 
 		System.out.println("Parsing " + Data.parsables.size() + " objects...");
 
-		Renderer renderer = new HandlebarsRenderer();
+		final Renderer renderer = new HandlebarsRenderer();
 
-		if (Files.notExists(output.resolve("SITEMAP.xml"))
-				&& Files.exists(Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY).resolve("SITEMAP.html"))) {
-			try (BufferedWriter bw = Files.newBufferedWriter(output.resolve("SITEMAP.xml"), StandardCharsets.UTF_8)) {
-				bw.write(renderer.renderSitemap());
+		if (Files.notExists(output.resolve("SITEMAP.xml")) && Files.exists(themesPath.resolve("SITEMAP.html"))) {
+			try {
+				Files.write(output.resolve("SITEMAP.xml"), renderer.renderSitemap().getBytes(StandardCharsets.UTF_8));
 			} catch (IOException ex) {
 				Logger.getLogger(Griffin.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 
 		indexer = new Indexer();
-
-
 		indexer.initIndexes();
 
 		parsables.stream()
@@ -216,9 +221,6 @@ public class Griffin implements Runnable {
 					ContentCollectors.findTags(parsables)
 			);
 
-			if (Files.notExists(Paths.get(DirectoryStructure.getInstance().TAGS_DIRECTORY))) {
-				Files.createDirectory(Paths.get(DirectoryStructure.getInstance().TAGS_DIRECTORY));
-			}
 			renderTags();
 		}
 
@@ -232,6 +234,17 @@ public class Griffin implements Runnable {
 
 		long end = System.currentTimeMillis();
 		System.out.println("Time (hardly) taken: " + (end - start) + " ms");
+	}
+
+	private Predicate<Path> greaterThenLastModified() {
+		return path -> {
+			try {
+				return Files.getLastModifiedTime(path).toMillis() > InfoHandler.LAST_PARSE_DATE;
+			} catch (IOException e) {
+				Logger.getLogger(Griffin.class.getName()).log(Level.SEVERE, null, e);
+				return true;
+			}
+		};
 	}
 
 	public static void printAsciiGriffin() {
@@ -255,25 +268,29 @@ public class Griffin implements Runnable {
 		throw new ParameterException(spec.commandLine(), "Missing required subcommand");
 	}
 
-
 	private void renderIndexRssAnd404(Renderer renderer) throws IOException {
+		final Path output = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY);
+		final Path themesPath = Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY);
+
+		final Path pagePath = output.resolve("page");
+
 		final List<SingleIndex> list = indexer.getIndexList();
 
-		if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("index.html"))) {
-			try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("index.html"), StandardCharsets.UTF_8)) {
-				bw.write(renderer.renderIndex(list.get(0)));
+		if (Files.notExists(output.resolve("index.html"))) {
+			try {
+				Files.write(output.resolve("index.html"), renderer.renderIndex(list.get(0)).getBytes(StandardCharsets.UTF_8));
 			} catch (IOException ex) {
 				Logger.getLogger(Griffin.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
-		final Path pagePath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "page");
+
 		if (Files.notExists(pagePath)) {
 			Files.createDirectory(pagePath);
 		}
 		list.remove(0);
 
 		for (SingleIndex s : list) {
-			Path secondaryIndexPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "page", "" + (list.indexOf(s) + 2));
+			Path secondaryIndexPath = pagePath.resolve("" + (list.indexOf(s) + 2));
 
 			if (Files.notExists(secondaryIndexPath)) {
 				Files.createDirectory(secondaryIndexPath);
@@ -282,24 +299,24 @@ public class Griffin implements Runnable {
 			Files.write(secondaryIndexPath.resolve("index.html"), renderer.renderIndex(s).getBytes(StandardCharsets.UTF_8));
 		}
 
-		if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("feed.xml")) && Files.exists(Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY).resolve("feed.htm;"))) {
-			try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("feed.xml"), StandardCharsets.UTF_8)) {
-				bw.write(renderer.renderRssFeed());
+		if (Files.notExists(output.resolve("feed.xml")) && Files.exists(themesPath.resolve("feed.htm;"))) {
+			try {
+				Files.write(output.resolve("feed.xml"),renderer.renderRssFeed().getBytes(StandardCharsets.UTF_8));
 			} catch (IOException ex) {
 				Logger.getLogger(Griffin.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 
-		if (Files.notExists(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY, "404.html")) && Files.exists(Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY, "404.html"))) {
-			try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve("404.html"), StandardCharsets.UTF_8)) {
-				bw.write(renderer.render404());
+		if (Files.notExists(output.resolve("404.html")) && Files.exists(themesPath.resolve("404.html"))) {
+			try {
+				Files.write(output.resolve("404.html"), renderer.render404().getBytes(StandardCharsets.UTF_8));
 			} catch (IOException ex) {
 				Logger.getLogger(Griffin.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 	}
 
-	//TODO Method doesnt fit on screen -> TOO LONG. Refactor.
+	//TODO Method doesn't fit on screen -> TOO LONG. Refactor.
 
 	/**
 	 * Renders the posts of each tag as symbolic links. This method calcualtes
@@ -308,10 +325,17 @@ public class Griffin implements Runnable {
 	 * tags. Then each list is processed by a new thread in the executor
 	 * service.
 	 */
-	protected void renderTags() {
-		final Path output = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY);
-		final Path tagsPath = Paths.get(DirectoryStructure.getInstance().TAGS_DIRECTORY);
+	protected void renderTags() throws IOException {
+
 		if (config.getRenderTags()) {
+
+			final Path output = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY);
+			final Path tagsPath = Paths.get(DirectoryStructure.getInstance().TAGS_DIRECTORY);
+
+			if (Files.notExists(tagsPath)) {
+				Files.createDirectory(tagsPath);
+			}
+
 			for (List<Parsable> l : tags.values()) {
 				l.sort((s, t) -> t.getDate().compareTo(s.getDate()));
 			}
@@ -351,9 +375,9 @@ public class Griffin implements Runnable {
 					}
 				}
 
-				HandlebarsRenderer renderer = null;
+
 				try {
-					renderer = new HandlebarsRenderer();
+					HandlebarsRenderer renderer = new HandlebarsRenderer();
 					Files.write(tagDir.resolve("index.html"),  renderer.renderTagIndex(tag, parsables).getBytes(StandardCharsets.UTF_8));
 				} catch (IOException e) {
 					throw new UncheckedIOException(e);
@@ -362,64 +386,4 @@ public class Griffin implements Runnable {
 
 		}
 	}
-
-	//TODO refactor this method to make use of the above method someway.
-
-	/**
-	 * Checks if the file has been modified after the last parse event and only
-	 * then adds the file into the queue for parsing, hence saving time.
-	 *
-	 * @param rootPath
-	 * @throws IOException the exception
-	 */
-	protected static void fastReadIntoQueue(Path rootPath) throws IOException {
-//        cleanOutputDirectory();
-//        copyTemplateAssets();
-
-		Files.walkFileTree(rootPath, new SimpleFileVisitor<Path>() {
-
-			@Override
-			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-				final Path correspondingOutputPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY)
-						.resolve(rootPath.relativize(dir));
-
-				if (config.getExcludeDirs().contains(dir.getFileName().toString())) {
-					return FileVisitResult.SKIP_SUBTREE;
-				}
-				if (Files.notExists(correspondingOutputPath)) {
-					Files.createDirectory(correspondingOutputPath);
-				}
-
-				return FileVisitResult.CONTINUE;
-			}
-
-			@Override
-			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				final long fileModified = Files.getLastModifiedTime(file).toMillis();
-				final Path resolvedPath = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY).resolve(rootPath.relativize(file));
-				if (file.getFileName().toString().endsWith(".md")) {
-					if (fileModified> InfoHandler.LAST_PARSE_DATE) {
-						Parsable parsable = Content.createParsable(file);
-						Data.parsables.removeIf(p -> p.getPermalink().equals(parsable.getPermalink()));
-						Data.parsables.add(parsable);
-					}
-				} else {
-					Files.copy(file, resolvedPath, StandardCopyOption.REPLACE_EXISTING);
-				}
-				return FileVisitResult.CONTINUE;
-			}
-
-			@Override
-			public FileVisitResult visitFileFailed(Path file, IOException exc) {
-				return FileVisitResult.TERMINATE;
-			}
-
-			@Override
-			public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-				return FileVisitResult.CONTINUE;
-			}
-		});
-	}
-
-
 }
