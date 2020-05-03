@@ -6,18 +6,25 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Arrays.asList;
@@ -121,6 +128,15 @@ public class GriffinTestSuite {
 		final File tempIn = createTempFile();
 		final File tempErr = createTempFile();
 
+		Files.write(tempIn.toPath(),
+				Arrays.asList(
+						"hello",
+						"",
+						"",
+						""
+				)
+				);
+
 		final Path testDir = createTestDir();
 
 		final String blogDirectory = "griffin-" + RANDOM.nextInt();
@@ -131,23 +147,26 @@ public class GriffinTestSuite {
 				testDir.toAbsolutePath().toString()
 				);
 
-		Process griffinJar = new ProcessBuilder()
+		Process process = new ProcessBuilder()
 				.directory(griffinRun.workDir)
 				.command(command)
 				.redirectOutput(tempOut)
 				.redirectInput(tempIn)
 				.redirectError(tempErr)
 				.start();
+		OutputStream stdin = process.getOutputStream ();
+		InputStream stderr = process.getErrorStream ();
+		InputStream stdout = process.getInputStream ();
 
-		OutputStream os = griffinJar.getOutputStream();
-		try (PrintWriter writer= new PrintWriter(os)) {
-			writer.write("\n");
-			writer.write("\n");
-			writer.write("\n");
-		}
+		BufferedReader reader = new BufferedReader (new InputStreamReader(stderr));
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stdin));
 
+//		writer.write("hello-name");
+//		writer.newLine();
+//		writer.newLine();
+//		writer.newLine();
 
-		griffinJar.waitFor(2, TimeUnit.SECONDS);
+		process.waitFor(2, TimeUnit.SECONDS);
 
 		printLogs(tempOut, tempIn, tempErr);
 
@@ -168,7 +187,7 @@ public class GriffinTestSuite {
 				"--verbose"
 		);
 
-		griffinJar = new ProcessBuilder()
+		process = new ProcessBuilder()
 				.directory(griffinRun.workDir)
 				.command(command)
 				.redirectOutput(tempOut)
@@ -176,7 +195,7 @@ public class GriffinTestSuite {
 				.redirectError(tempErr)
 				.start();
 
-		griffinJar.waitFor(2, TimeUnit.SECONDS);
+		process.waitFor(2, TimeUnit.SECONDS);
 
 		printLogs(tempOut, tempIn, tempErr);
 
