@@ -109,7 +109,6 @@ public class GriffinTestSuite {
 
 		printLogs(tempOut, tempIn, tempErr);
 
-
 		System.out.println(FileAssert.printDirectoryTree(testDir.toFile()));;
 	}
 
@@ -121,15 +120,6 @@ public class GriffinTestSuite {
 		final File tempOut = createTempFile();
 		final File tempIn = createTempFile();
 		final File tempErr = createTempFile();
-
-		Files.write(tempIn.toPath(),
-				Arrays.asList(
-						"hello",
-						"",
-						"",
-						""
-				)
-				);
 
 		final Path testDir = createTestDir();
 
@@ -158,6 +148,8 @@ public class GriffinTestSuite {
 		Path first = testDir.resolve(blogDirectory).resolve("content").resolve("2020-05-02-first.md");
 
 		if (Files.notExists(first)) {
+			System.out.println("first.getParent() = " + first.getParent());
+			System.out.println("first.getParent() = " + Files.exists(first.getParent()));
 			Files.createFile(first);
 		}
 
