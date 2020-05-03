@@ -52,6 +52,9 @@ public class NewCommand implements Callable<Integer> {
 	@Option(names = {"--name", "-n"}, paramLabel = "<FOLDER_NAME>", description = "name of the directory to be created")
 	private String name = "griffin";
 
+	@Option(names = {"--default", "-d"}, description = "Default parameters")
+	private boolean defaults = false;
+
 	@Override
 	public Integer call() {
 		try {
@@ -104,45 +107,44 @@ public class NewCommand implements Callable<Integer> {
 
 		showWelcomeMessage(path, name);
 
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
-		System.out.println("1. What would you like to call your site?(" + config.getSiteName() + "):");
-		nam = br.readLine();
-		System.out.println("2. Who's authoring this site?");
-		auth = br.readLine();
-		System.out.println("3. What will be the tagline for the site?(" + config.getSiteTagline() + "):");
-		tag = br.readLine();
-		System.out.println("4. What will you like to name the folder where your posts will be stored?(" + config.getSourceDir() + "):");
-		src = br.readLine();
-		System.out.println("5. What will you like to name the folder where the generated site will be stored?(" + config.getOutputDir() + "):");
-		out = br.readLine();
-		System.out.println("6. What will you like to format the dates on yourData. posts and pages as?(" + config.getInputDateFormat() + "):");
-		date = br.readLine();
-		System.out.println("7. On what port will you like to see the live preview of your site?(" + config.getPort() + "):");
-		port = br.readLine();
-		finalizeConfigurationSettings(nam, auth, tag, src, out, date, port);
-	}
+		if (!defaults) {
 
-	private void finalizeConfigurationSettings(String nam, String auth, String tag, String src, String out, String date, String port) {
-		if (nam != null && !nam.equals(config.getSiteName()) && !nam.equals("")) {
-			config.withSiteName(nam);
-		}
-		if (auth != null && !auth.equals(config.getSiteAuthor()) && !auth.equals("")) {
-			config.withSiteAuthour(auth);
-		}
-		if (tag != null && !tag.equals(config.getSiteTagline()) && !tag.equals("")) {
-			config.withSiteTagline(tag);
-		}
-		if (src != null && !src.equals(config.getSourceDir()) && !src.equals("")) {
-			config.withSourceDir(src);
-		}
-		if (out != null && !out.equals(config.getOutputDir()) && !out.equals("")) {
-			config.withOutputDir(out);
-		}
-		if (date != null && !date.equals(config.getInputDateFormat()) && !date.equals("")) {
-			config.withDateFormat(date);
-		}
-		if (port != null && !port.equals(config.getPort().toString()) && !port.equals("")) {
-			config.withPort(Integer.parseInt(port));
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+			System.out.println("1. What would you like to call your site?(" + config.getSiteName() + "):");
+			nam = br.readLine();
+			System.out.println("2. Who's authoring this site?");
+			auth = br.readLine();
+			System.out.println("3. What will be the tagline for the site?(" + config.getSiteTagline() + "):");
+			tag = br.readLine();
+			System.out.println("4. What will you like to name the folder where your posts will be stored?(" + config.getSourceDir() + "):");
+			src = br.readLine();
+			System.out.println("5. What will you like to name the folder where the generated site will be stored?(" + config.getOutputDir() + "):");
+			out = br.readLine();
+			System.out.println("6. What will you like to format the dates on yourData. posts and pages as?(" + config.getInputDateFormat() + "):");
+			date = br.readLine();
+			System.out.println("7. On what port will you like to see the live preview of your site?(" + config.getPort() + "):");
+			port = br.readLine();
+			if (nam != null && !nam.equals(config.getSiteName()) && !nam.equals("")) {
+				config.withSiteName(nam);
+			}
+			if (auth != null && !auth.equals(config.getSiteAuthor()) && !auth.equals("")) {
+				config.withSiteAuthour(auth);
+			}
+			if (tag != null && !tag.equals(config.getSiteTagline()) && !tag.equals("")) {
+				config.withSiteTagline(tag);
+			}
+			if (src != null && !src.equals(config.getSourceDir()) && !src.equals("")) {
+				config.withSourceDir(src);
+			}
+			if (out != null && !out.equals(config.getOutputDir()) && !out.equals("")) {
+				config.withOutputDir(out);
+			}
+			if (date != null && !date.equals(config.getInputDateFormat()) && !date.equals("")) {
+				config.withDateFormat(date);
+			}
+			if (port != null && !port.equals(config.getPort().toString()) && !port.equals("")) {
+				config.withPort(Integer.parseInt(port));
+			}
 		}
 	}
 
