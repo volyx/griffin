@@ -14,11 +14,11 @@ public class JygmentsCodeEmitter implements BlockEmitter {
 	private BlockEmitter fallback = new CodeBlockEmitter();
 	private Formatter formatter;
 
-	{
+	public JygmentsCodeEmitter() {
 		try {
 			formatter = new JygmentsInplaceHtmlFormatter();
 		} catch (ResolutionException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 

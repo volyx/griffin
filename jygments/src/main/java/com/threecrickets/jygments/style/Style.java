@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +24,9 @@ import java.util.concurrent.ConcurrentMap;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.threecrickets.jygments.Jygments;
 import com.threecrickets.jygments.NestedDef;
 import com.threecrickets.jygments.ResolutionException;
@@ -88,9 +91,9 @@ public class Style extends NestedDef<Style>
 			objectMapper.getFactory().configure( JsonParser.Feature.ALLOW_COMMENTS, true );
 			try
 			{
-				Map<String, Object> json = objectMapper.readValue( stream, HashMap.class );
+				JsonNode jsonTree = objectMapper.readTree( stream);
 				style = new Style();
-				style.addJson( json );
+				style.addJsonTree(jsonTree);
 				style.resolve();
 
 				// Cache it
@@ -223,6 +226,29 @@ public class Style extends NestedDef<Style>
 			}
 			else if( entry.getValue() instanceof String )
 				add( tokenTypeName, (String) entry.getValue() );
+			else
+				throw new ResolutionException( "Unexpected value in style definition: " + entry.getValue() );
+		}
+	}
+
+	protected void addJsonTree( JsonNode json ) throws ResolutionException
+	{
+		final Iterator<Map.Entry<String, JsonNode>> iterator = json.fields();
+		while (iterator.hasNext())
+		{
+			Map.Entry<String, JsonNode> entry = iterator.next();
+			String tokenTypeName = entry.getKey();
+			if( entry.getValue().isArray())
+			{
+				final ArrayNode arrayNode = (ArrayNode) entry.getValue();
+				final Iterator<JsonNode> it = arrayNode.elements();
+				while (it.hasNext()) {
+					String styleElementName = it.next().asText();
+					add(tokenTypeName, styleElementName);
+				}
+			}
+			else if( entry.getValue().isTextual() )
+				add( tokenTypeName, entry.getValue().asText());
 			else
 				throw new ResolutionException( "Unexpected value in style definition: " + entry.getValue() );
 		}

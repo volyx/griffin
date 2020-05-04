@@ -19,8 +19,10 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.jar.JarEntry;
@@ -29,7 +31,9 @@ import java.util.jar.JarInputStream;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.threecrickets.jygments.Filter;
 import com.threecrickets.jygments.Jygments;
 import com.threecrickets.jygments.ResolutionException;
@@ -102,13 +106,12 @@ public class Lexer extends Grammar
 				String converted = Util.rejsonToJson( stream );
 				ObjectMapper objectMapper = new ObjectMapper();
 				objectMapper.getFactory().configure( JsonParser.Feature.ALLOW_COMMENTS, true );
-				Map<String, Object> json = objectMapper.readValue( converted, HashMap.class );
-				Object className = json.get( "class" );
-				if( className == null )
-					className = "";
+				JsonNode jsonNode = objectMapper.readTree( converted);
+				String className = jsonNode.has( "class" ) ? jsonNode.get("class").asText("") : "";
 
-				lexer = getByName( className.toString() );
-				lexer.addJson( json );
+				lexer = getByName(className);
+				Objects.requireNonNull(lexer, "lexer is null " + className);
+				lexer.addJsonTree( jsonNode );
 				lexer.resolve();
 
 				if( lexer != null )
@@ -336,6 +339,24 @@ public class Lexer extends Grammar
 			return;
 		for( String filename : filenames )
 			addFilename( filename );
+	}
+
+	protected void addJsonTree(JsonNode jsonNode)
+	{
+
+		if (!jsonNode.has("filenames")) {
+			return;
+		}
+		final JsonNode filenamesNode = jsonNode.get("filenames");
+		if (!filenamesNode.isArray()) {
+			throw new RuntimeException("is not array");
+		}
+		final ArrayNode arrayNode = (ArrayNode) filenamesNode;
+
+		for (JsonNode node : arrayNode) {
+			String filename = node.asText();
+			addFilename(filename);
+		}
 	}
 
 	// //////////////////////////////////////////////////////////////////////////

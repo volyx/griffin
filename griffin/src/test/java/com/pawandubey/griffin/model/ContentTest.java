@@ -2,8 +2,6 @@ package com.pawandubey.griffin.model;
 
 import com.pawandubey.griffin.Data;
 import com.pawandubey.griffin.DirectoryStructure;
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -11,6 +9,9 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Random;
+
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 class ContentTest {
 
@@ -38,8 +39,8 @@ class ContentTest {
 						"\n" +
 						"Given a non-empty\n");
 
-		Assert.assertThat(post, CoreMatchers.notNullValue());
-		Assert.assertThat(post.getContent(), CoreMatchers.notNullValue());
+		assertThat(post, notNullValue());
+		assertThat(post.getContent(), notNullValue());
 	}
 
 	@Test()

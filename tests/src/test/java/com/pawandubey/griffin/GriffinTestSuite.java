@@ -37,7 +37,15 @@ public class GriffinTestSuite {
 			"\n" +
 			"---\n" +
 			"\n" +
-			"Given a non-empty\n";
+			"Given a non-empty\n" +
+			"```java\n" +
+			"class Scratch {\n" +
+			"\tpublic static void main(String[] args) {\n" +
+			"\t\t\n" +
+			"\t}\n" +
+			"}\n" +
+			"```\n"
+			;
 
 	@TempDir
 	File tempDir;
@@ -126,7 +134,7 @@ public class GriffinTestSuite {
 		final String blogDirectory = "griffin-" + RANDOM.nextInt();
 		List<String> command = concat(griffinRun.command,
 				"new",
-				"-d",
+//				"-d",
 				"-n",
 				blogDirectory,
 				testDir.toAbsolutePath().toString()
@@ -148,8 +156,6 @@ public class GriffinTestSuite {
 		Path first = testDir.resolve(blogDirectory).resolve("content").resolve("2020-05-02-first.md");
 
 		if (Files.notExists(first)) {
-			System.out.println("first.getParent() = " + first.getParent());
-			System.out.println("first.getParent() = " + Files.exists(first.getParent()));
 			Files.createFile(first);
 		}
 

@@ -5,6 +5,42 @@
     },
     {
       "pattern": "helpers.nashorn.js"
+    },
+    {
+      "pattern": "DefaultStyle.json"
+    },
+    {
+      "pattern": "ClojureLexer.json"
+    },
+    {
+      "pattern": "CssLexer.json"
+    },
+    {
+      "pattern": "DefaultStyle.json"
+    },
+    {
+      "pattern": "HtmlLexer.json"
+    },
+    {
+      "pattern": "JavaLexer.json"
+    },
+    {
+      "pattern": "JavascriptLexer.json"
+    },
+    {
+      "pattern": "JspLexer.json"
+    },
+    {
+      "pattern": "JspRootLexer.json"
+    },
+    {
+      "pattern": "PrudenceHtmlLexer.json"
+    },
+    {
+      "pattern": "PythonLexer.json"
+    },
+    {
+      "pattern": "XmlLexer.json"
     }
   ]
 }
