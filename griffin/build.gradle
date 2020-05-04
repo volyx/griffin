@@ -3,7 +3,7 @@ plugins {
     id 'base'
     id 'java'
     id 'application'
-    id "org.mikeneck.graalvm-native-image" version "0.3.0"
+    id "org.mikeneck.graalvm-native-image" version "0.4.0"
     id 'com.github.johnrengelman.shadow' version '5.2.0'
 //    id 'checkstyle'
 }
@@ -71,20 +71,11 @@ import org.gradle.internal.os.OperatingSystem
 
 String osName = OperatingSystem.current().getNativePrefix()
 
-task createOutputDir(type: DefaultTask) {
-    File file = file("$buildDir/native-image/$osName")
-    if (!file.exists()) {
-        file.mkdirs();
-    }
-}
-
-createOutputDir.dependsOn build
-
 nativeImage {
-    setGraalVmHome(System.getProperty("java.home"))
-    setMainClass(mainClassName)
-    setExecutableName("$project.name")
-//    setOutputDirecory("$buildDir/native-image/$osName")
+    graalVmHome = System.getProperty('java.home')
+    mainClass = mainClassName
+    executableName = "$project.name"
+    outputDirectory = file("$buildDir/native-image/$osName")
     arguments(
             "--no-fallback",
             "--enable-all-security-services",
@@ -92,8 +83,7 @@ nativeImage {
             "-H:EnableURLProtocols=http",
             "-H:+AllowVMInspection",
             "-H:+ReportExceptionStackTraces",
-            "-Dfile.encoding=UTF-8",
-            "-H:Path=$buildDir/native-image/$osName"
+            "-Dfile.encoding=UTF-8"
     )
 }
 

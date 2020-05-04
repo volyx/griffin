@@ -60,8 +60,7 @@ public class InfoHandler {
      * Writes the info file with the parsing timestamp and a list of paths to
      * the latest posts.
      */
-    protected void writeInfoFile() {
-        Path infoFilePath = Paths.get(DirectoryStructure.getInstance().INFO_FILE);
+    protected void writeInfoFile(Path infoFilePath) {
 
         List<String> lines = new ArrayList<>();
         lines.add(System.currentTimeMillis() + "");

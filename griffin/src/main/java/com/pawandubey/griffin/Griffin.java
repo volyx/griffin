@@ -69,8 +69,6 @@ public class Griffin implements Runnable {
 	public static final String VERSION = "0.3.1";
 	public static final String EXCERPT_MARKER = "##more##";
 
-	private Indexer indexer;
-
 
 	private Cacher cacher;
 
@@ -106,6 +104,8 @@ public class Griffin implements Runnable {
 		Path content = directory.resolve(DirectoryStructure.getInstance().SOURCE_DIRECTORY);
 		Path output = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY);
 		Path themesPath = Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY);
+		Path infoFilePath = Paths.get(DirectoryStructure.getInstance().INFO_FILE);
+
 		Path assetsPath = themesPath.resolve("assets");
 		Path outputAssetsPath = output.resolve("assets");
 
@@ -194,7 +194,7 @@ public class Griffin implements Runnable {
 
 		System.out.println("Parsing " + Data.parsables.size() + " objects...");
 
-		final Renderer renderer = new HandlebarsRenderer();
+		final Renderer renderer = new HandlebarsRenderer(themesPath);
 
 		if (Files.notExists(output.resolve("SITEMAP.xml")) && Files.exists(themesPath.resolve("SITEMAP.html"))) {
 			try {
@@ -204,7 +204,7 @@ public class Griffin implements Runnable {
 			}
 		}
 
-		indexer = new Indexer();
+		Indexer indexer = new Indexer();
 		indexer.initIndexes();
 
 		parsables.stream()
@@ -216,20 +216,21 @@ public class Griffin implements Runnable {
 				.map(new ContentRenderer(renderer))
 				.forEach(new ContentWriter(output));
 
+
+
 		if (config.getRenderTags()) {
 			Data.tags.putAll(
 					ContentCollectors.findTags(parsables)
 			);
 
-			renderTags();
+			renderTags(renderer);
 		}
 
 		indexer.sortIndexes();
 
-		renderIndexRssAnd404(renderer);
+		renderIndexRssAnd404(renderer, indexer, output, themesPath);
 		InfoHandler info = new InfoHandler();
-
-		info.writeInfoFile();
+		info.writeInfoFile(infoFilePath);
 		cacher.cacheTaggedParsables(Data.tags);
 
 		long end = System.currentTimeMillis();
@@ -268,9 +269,7 @@ public class Griffin implements Runnable {
 		throw new ParameterException(spec.commandLine(), "Missing required subcommand");
 	}
 
-	private void renderIndexRssAnd404(Renderer renderer) throws IOException {
-		final Path output = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY);
-		final Path themesPath = Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY);
+	private void renderIndexRssAnd404(Renderer renderer, Indexer indexer, Path output, Path themesPath) throws IOException {
 
 		final Path pagePath = output.resolve("page");
 
@@ -278,7 +277,8 @@ public class Griffin implements Runnable {
 
 		if (Files.notExists(output.resolve("index.html"))) {
 			try {
-				Files.write(output.resolve("index.html"), renderer.renderIndex(list.get(0)).getBytes(StandardCharsets.UTF_8));
+				final SingleIndex firstIndex = list.get(0);
+				Files.write(output.resolve("index.html"), renderer.renderIndex(firstIndex).getBytes(StandardCharsets.UTF_8));
 			} catch (IOException ex) {
 				Logger.getLogger(Griffin.class.getName()).log(Level.SEVERE, null, ex);
 			}
@@ -325,7 +325,7 @@ public class Griffin implements Runnable {
 	 * tags. Then each list is processed by a new thread in the executor
 	 * service.
 	 */
-	protected void renderTags() throws IOException {
+	protected void renderTags(Renderer renderer) throws IOException {
 
 		if (config.getRenderTags()) {
 
@@ -375,7 +375,6 @@ public class Griffin implements Runnable {
 
 
 				try {
-					HandlebarsRenderer renderer = new HandlebarsRenderer();
 					Files.write(tagDir.resolve("index.html"),  renderer.renderTagIndex(tag, parsables).getBytes(StandardCharsets.UTF_8));
 				} catch (IOException e) {
 					throw new UncheckedIOException(e);

@@ -2,6 +2,9 @@ package com.pawandubey.griffin.graal;
 
 import com.oracle.svm.core.annotate.AutomaticFeature;
 import com.oracle.svm.core.jni.JNIRuntimeAccess;
+import com.pawandubey.griffin.SingleIndex;
+import com.pawandubey.griffin.model.Page;
+import com.pawandubey.griffin.model.Post;
 import com.threecrickets.jygments.contrib.Css2Lexer;
 import com.threecrickets.jygments.grammar.DelegatedLexer;
 import com.threecrickets.jygments.grammar.RegexLexer;
@@ -46,6 +49,12 @@ class JNIReflectionClasses implements Feature {
 				RegexLexer.class,
 				DelegatedLexer.class,
 				Css2Lexer.class,
+
+				com.fasterxml.jackson.databind.ext.Java7SupportImpl.class,
+
+				Post.class,
+				SingleIndex.class,
+				Page.class
 //			NativeDB.class,
 //			BusyHandler.class,
 //			Function.class,

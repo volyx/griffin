@@ -21,12 +21,11 @@ import com.github.jknack.handlebars.cache.ConcurrentMapTemplateCache;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
 import com.pawandubey.griffin.Data;
-import com.pawandubey.griffin.DirectoryStructure;
 import com.pawandubey.griffin.SingleIndex;
 import com.pawandubey.griffin.model.Parsable;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +35,6 @@ import java.util.Map;
  * @author Pawan Dubey pawandubey@outlook.com
  */
 public class HandlebarsRenderer implements Renderer {
-    private final TemplateLoader loader = new FileTemplateLoader(DirectoryStructure.getInstance().THEMES_DIRECTORY, ".html");
-    private final Handlebars handlebar = new Handlebars(loader).with(new ConcurrentMapTemplateCache());
     private final Template postTemplate;
     private final Template pageTemplate;
     private final Template indexTemplate;
@@ -51,20 +48,23 @@ public class HandlebarsRenderer implements Renderer {
      *
      * @throws IOException the exception
      */
-    public HandlebarsRenderer() throws IOException {
-        postTemplate = handlebar.compile("post");
-        pageTemplate = handlebar.compile("page");
-        indexTemplate = handlebar.compile("index");
-        tagTemplate = handlebar.compile("tagIndex");
-        if (Files.exists(Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY, "SITEMAP.html"))) {
+    public HandlebarsRenderer(final Path themesPath ) throws IOException {
+        TemplateLoader loader = new FileTemplateLoader(themesPath.toFile(), ".html");
+        Handlebars handlebar = new Handlebars(loader).with(new ConcurrentMapTemplateCache());
+        this.postTemplate = handlebar.compile("post");
+        this.pageTemplate = handlebar.compile("page");
+        this.indexTemplate = handlebar.compile("index");
+        this.tagTemplate = handlebar.compile("tagIndex");
+        if (Files.exists(themesPath.resolve("SITEMAP.html"))) {
             sitemapTemplate = handlebar.compile("SITEMAP");
         }
-        if (Files.exists(Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY, "feed.html"))) {
+        if (Files.exists(themesPath.resolve("feed.html"))) {
             rssTemplate = handlebar.compile("feed");
         }
-        if (Files.exists(Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY, "404.html"))) {
+        if (Files.exists(themesPath.resolve("404.html"))) {
             notFoundTemplate = handlebar.compile("404");
         }
+
     }
 
     /**
@@ -77,6 +77,12 @@ public class HandlebarsRenderer implements Renderer {
      */
     @Override
     public String renderParsable(Parsable parsable) throws IOException {
+
+//
+//        Context context  = Context.newBuilder(parsable)
+//                .resolver(MapValueResolver.INSTANCE)
+//                .build();
+
         Map<String, Object> map = new HashMap<>();
         map.put("data", Data.datum);
         map.put("post", parsable);
