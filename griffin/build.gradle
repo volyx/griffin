@@ -70,14 +70,18 @@ processResources.dependsOn packageScaffold
 //    toolVersion = '8.30'
 //}
 
+import org.gradle.internal.os.OperatingSystem
+
+String osName = OperatingSystem.current().getName();
+
 nativeImage {
     setGraalVmHome(System.getProperty("java.home"))
     setMainClass(mainClassName)
-    setExecutableName(project.name)
+    setExecutableName("$project.name-$osName")
+//    setOutputDirecory("$buildDir/native-image/$osName")
     arguments(
             "--no-fallback",
             "--enable-all-security-services",
-//            "--initialize-at-run-time=com.example.runtime",
             "--report-unsupported-elements-at-runtime",
             "-H:EnableURLProtocols=http",
             "-H:+AllowVMInspection",
