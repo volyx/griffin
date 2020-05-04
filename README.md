@@ -1,5 +1,5 @@
 # griffin
-[![Build Status](https://travis-ci.org/pawandubey/griffin.svg)](https://travis-ci.org/pawandubey/griffin)
+![Java CI with Gradle](https://github.com/volyx/griffin/workflows/Java%20CI%20with%20Gradle/badge.svg?branch=master)
 ````
                        ___     ___
                 __   /'___\  /'___\  __
