@@ -15,6 +15,7 @@
  */
 package com.pawandubey.griffin;
 
+import com.pawandubey.griffin.internal.OperatingSystem;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.File;
@@ -111,22 +112,22 @@ public class InternalServer {
 
 	public void openBrowser() {
 		String url = "http://localhost:" + port;
-		String os = System.getProperty("os.name").toLowerCase();
+		final OperatingSystem os = OperatingSystem.current();
 
 		try {
-			if (os.indexOf("win") >= 0) {
+			if (os.isWindows()) {
 				Runtime rt = Runtime.getRuntime();
 //			rt.exec("rundll32 url.dll,FileProtocolHandler " + url);
 				rt.exec("start \"" + url + "\"");
-			} else if (os.indexOf("mac") >= 0) {
+			} else if (os.isMacOsX()) {
 				Runtime rt = Runtime.getRuntime();
 				rt.exec("open " + url);
-			} else if (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0) {
+			} else if (os.isUnix()) {
 				Runtime rt = Runtime.getRuntime();
 				String[] browsers = {"chrome", "epiphany", "firefox", "mozilla", "konqueror",
 						"netscape", "opera", "links", "lynx"};
 
-				StringBuffer cmd = new StringBuffer();
+				StringBuilder cmd = new StringBuilder();
 				for (int i = 0; i < browsers.length; i++)
 					if (i == 0)
 						cmd.append(String.format("%s \"%s\"", browsers[i], url));
@@ -139,6 +140,5 @@ public class InternalServer {
 		} catch (IOException e) {
 			System.err.println("error open browser");
 		}
-
 	}
 }

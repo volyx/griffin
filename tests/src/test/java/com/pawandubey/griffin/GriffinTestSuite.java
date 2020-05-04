@@ -1,5 +1,6 @@
 package com.pawandubey.griffin;
 
+import com.pawandubey.griffin.internal.OperatingSystem;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.io.TempDir;
@@ -15,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -221,7 +221,12 @@ public class GriffinTestSuite {
 								"griffin-all.jar")
 				),
 				new GriffinRun(
-						parentModuleDirectory.resolve("griffin").resolve("build").resolve("native-image").toFile(),
+						parentModuleDirectory
+								.resolve("griffin")
+								.resolve("build")
+								.resolve("native-image")
+								.resolve(OperatingSystem.current().getNativePrefix())
+								.toFile(),
 						Collections.singletonList("./griffin")
 				)
 		);

@@ -72,12 +72,21 @@ processResources.dependsOn packageScaffold
 
 import org.gradle.internal.os.OperatingSystem
 
-String osName = OperatingSystem.current().getName();
+String osName = OperatingSystem.current().getNativePrefix()
+
+task createOutputDir(type: DefaultTask) {
+    File file = file("$buildDir/native-image/$osName")
+    if (!file.exists()) {
+        file.mkdirs();
+    }
+}
+
+createOutputDir.dependsOn build
 
 nativeImage {
     setGraalVmHome(System.getProperty("java.home"))
     setMainClass(mainClassName)
-    setExecutableName("$project.name-$osName")
+    setExecutableName("$project.name")
 //    setOutputDirecory("$buildDir/native-image/$osName")
     arguments(
             "--no-fallback",
@@ -86,10 +95,10 @@ nativeImage {
             "-H:EnableURLProtocols=http",
             "-H:+AllowVMInspection",
             "-H:+ReportExceptionStackTraces",
-            "-Dfile.encoding=UTF-8"
+            "-Dfile.encoding=UTF-8",
+            "-H:Path=$buildDir/native-image/$osName"
     )
 }
-
 
 test {
     useJUnitPlatform()
