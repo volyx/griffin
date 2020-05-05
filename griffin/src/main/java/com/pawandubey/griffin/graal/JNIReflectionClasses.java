@@ -55,15 +55,6 @@ class JNIReflectionClasses implements Feature {
 				Post.class,
 				SingleIndex.class,
 				Page.class
-//			NativeDB.class,
-//			BusyHandler.class,
-//			Function.class,
-//			ProgressHandler.class,
-//			Function.Aggregate.class,
-//			Function.Window.class,
-//			org.sqlite.core.DB.ProgressObserver.class,
-//			java.lang.Throwable.class,
-//			boolean[].class
 		};
 	}
 

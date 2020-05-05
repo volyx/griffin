@@ -16,21 +16,7 @@
 package com.pawandubey.griffin;
 
 import com.moandjiezana.toml.Toml;
-import static com.pawandubey.griffin.ConfigurationKeys.EXCLUDE;
-import static com.pawandubey.griffin.ConfigurationKeys.IMAGE;
-import static com.pawandubey.griffin.ConfigurationKeys.INDEX_POSTS;
-import static com.pawandubey.griffin.ConfigurationKeys.IN_DATE_FORMAT;
-import static com.pawandubey.griffin.ConfigurationKeys.OUTPUT_DIR;
-import static com.pawandubey.griffin.ConfigurationKeys.OUT_DATE_FORMAT;
-import static com.pawandubey.griffin.ConfigurationKeys.PORT;
-import static com.pawandubey.griffin.ConfigurationKeys.RENDER_TAGS;
-import static com.pawandubey.griffin.ConfigurationKeys.SITE_AUTHOR;
-import static com.pawandubey.griffin.ConfigurationKeys.SITE_BASE_URL;
-import static com.pawandubey.griffin.ConfigurationKeys.SITE_NAME;
-import static com.pawandubey.griffin.ConfigurationKeys.SITE_TAGLINE;
-import static com.pawandubey.griffin.ConfigurationKeys.SOCIAL;
-import static com.pawandubey.griffin.ConfigurationKeys.SOURCE_DIR;
-import static com.pawandubey.griffin.ConfigurationKeys.THEME;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +28,8 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
+
+import static com.pawandubey.griffin.ConfigurationKeys.*;
 
 /**
  * Reads and updates configuration for the site from the config.toml file.
@@ -59,6 +47,7 @@ public class Configurator {
     private List<String> excludeDirs;
     private String inputDateFormat = "yyyy MM dd";
     private String outputDateFormat = "yyyy MM dd";
+    private CodeHighLighter codeHighLighter = CodeHighLighter.block;
     private String theme = "wells";
     private Integer port = 9090;
     private Social social;
@@ -81,6 +70,9 @@ public class Configurator {
             excludeDirs = toml.getList(EXCLUDE.key);
             inputDateFormat = toml.getString(IN_DATE_FORMAT.key);
             outputDateFormat = toml.getString(OUT_DATE_FORMAT.key);
+            if (toml.getString(CODE_HIGH_LIGHTER.key) != null) {
+                codeHighLighter = CodeHighLighter.valueOf(toml.getString(CODE_HIGH_LIGHTER.key));
+            }
             theme = toml.getString(THEME.key);
             indexPosts = Integer.valueOf(toml.getLong(INDEX_POSTS.key).toString());
             port = Integer.valueOf(toml.getLong(PORT.key).toString());
@@ -281,6 +273,16 @@ public class Configurator {
      */
     public String getHeaderImage() {
         return headerImage;
+    }
+
+    public CodeHighLighter getCodeHighLighter() {
+        return codeHighLighter;
+    }
+
+    public static enum CodeHighLighter {
+        block,
+        jygments
+        ;
     }
 
     /**

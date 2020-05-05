@@ -19,10 +19,8 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.jar.JarEntry;
@@ -84,21 +82,13 @@ public class Lexer extends Grammar
 		if( lexer != null )
 			return lexer;
 
-		try
-		{
-			return (Lexer) Jygments.class.getClassLoader().loadClass( fullName ).newInstance();
-		}
-		catch( InstantiationException x )
-		{
-		}
-		catch( IllegalAccessException x )
-		{
-		}
-		catch( ClassNotFoundException x )
-		{
+
+		lexer = Jygments.loadClass(fullName);
+		if (lexer != null) {
+			return lexer;
 		}
 
-		InputStream stream = Jygments.class.getClassLoader().getResourceAsStream( fullName.replace( '.', '/' ) + ".json" );
+		InputStream stream = Jygments.getResourceAsStream( fullName.replace( '.', '/' ) + ".json" );
 		if( stream != null )
 		{
 			try
@@ -106,13 +96,13 @@ public class Lexer extends Grammar
 				String converted = Util.rejsonToJson( stream );
 				ObjectMapper objectMapper = new ObjectMapper();
 				objectMapper.getFactory().configure( JsonParser.Feature.ALLOW_COMMENTS, true );
-				JsonNode jsonNode = objectMapper.readTree( converted);
-				String className = jsonNode.has( "class" ) ? jsonNode.get("class").asText("") : "";
+				Map<String, Object> json = objectMapper.readValue( converted, HashMap.class );
+				Object className = json.get( "class" );
+				if( className == null )
+					className = "";
 
-				lexer = getByName(className);
-				Objects.requireNonNull(lexer, "lexer is null " + className);
-				lexer.addJsonTree( jsonNode );
-				lexer.resolve();
+				lexer = getByName( className.toString() );
+				lexer.addJson( json );
 
 				if( lexer != null )
 				{

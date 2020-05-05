@@ -53,21 +53,7 @@ public abstract class Formatter
 
 	public static Formatter getByFullName( String fullName ) throws ResolutionException
 	{
-		try
-		{
-			return (Formatter) Jygments.class.getClassLoader().loadClass( fullName ).newInstance();
-		}
-		catch( InstantiationException x )
-		{
-		}
-		catch( IllegalAccessException x )
-		{
-		}
-		catch( ClassNotFoundException x )
-		{
-		}
-
-		return null;
+		return Jygments.loadClass(fullName);
 	}
 
 	public Formatter( Style style, boolean full, String title, String encoding )

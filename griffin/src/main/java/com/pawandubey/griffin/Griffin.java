@@ -213,7 +213,7 @@ public class Griffin implements Runnable {
       						indexer.addToIndex(p);
     					}
 				})
-				.map(new ContentRenderer(renderer))
+				.map(new ContentRenderer(renderer, config))
 				.forEach(new ContentWriter(output));
 
 

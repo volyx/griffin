@@ -32,6 +32,7 @@ public enum ConfigurationKeys {
     EXCLUDE("exclude"),
     IN_DATE_FORMAT("inputdate"),
     OUT_DATE_FORMAT("outputdate"),
+    CODE_HIGH_LIGHTER("code"),
     THEME("theme"),
     IMAGE("headerimage"),
     PORT("port"),

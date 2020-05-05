@@ -14,6 +14,7 @@ package com.threecrickets.jygments.style;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -70,30 +71,20 @@ public class Style extends NestedDef<Style>
 		if( style != null )
 			return style;
 
-		try
-		{
-			return (Style) Jygments.class.getClassLoader().loadClass( fullName ).newInstance();
-		}
-		catch( InstantiationException x )
-		{
-		}
-		catch( IllegalAccessException x )
-		{
-		}
-		catch( ClassNotFoundException x )
-		{
-		}
+		style = Jygments.loadClass(fullName);
+		if( style != null )
+			return style;
 
-		InputStream stream = Jygments.class.getClassLoader().getResourceAsStream( fullName.replace( '.', '/' ) + ".json" );
+		InputStream stream = Jygments.getResourceAsStream( fullName.replace( '.', '/' ) + ".json" );
 		if( stream != null )
 		{
 			ObjectMapper objectMapper = new ObjectMapper();
 			objectMapper.getFactory().configure( JsonParser.Feature.ALLOW_COMMENTS, true );
 			try
 			{
-				JsonNode jsonTree = objectMapper.readTree( stream);
+				Map<String, Object> json = objectMapper.readValue( stream, HashMap.class );
 				style = new Style();
-				style.addJsonTree(jsonTree);
+				style.addJson( json );
 				style.resolve();
 
 				// Cache it
@@ -164,7 +155,7 @@ public class Style extends NestedDef<Style>
 				done = true;
 				for( TokenType tokenType : TokenType.getTokenTypes() )
 				{
-					if( tokenType != TokenType.Token )
+					if(!TokenType.Token.equals(tokenType))
 					{
 						if( !styleElements.containsKey( tokenType ) )
 						{
@@ -208,8 +199,7 @@ public class Style extends NestedDef<Style>
 	protected void add( String tokenTypeName, String... styleElementNames )
 	{
 		ArrayList<String> list = new ArrayList<String>( styleElementNames.length );
-		for( String styleElementName : styleElementNames )
-			list.add( styleElementName );
+		list.addAll(Arrays.asList(styleElementNames));
 		addDef( new StyleElementDef( tokenTypeName, list ) );
 	}
 
@@ -241,9 +231,8 @@ public class Style extends NestedDef<Style>
 			if( entry.getValue().isArray())
 			{
 				final ArrayNode arrayNode = (ArrayNode) entry.getValue();
-				final Iterator<JsonNode> it = arrayNode.elements();
-				while (it.hasNext()) {
-					String styleElementName = it.next().asText();
+				for (JsonNode jsonNode : arrayNode) {
+					String styleElementName = jsonNode.asText();
 					add(tokenTypeName, styleElementName);
 				}
 			}
