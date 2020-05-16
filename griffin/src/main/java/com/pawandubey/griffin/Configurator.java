@@ -18,7 +18,6 @@ package com.pawandubey.griffin;
 import com.moandjiezana.toml.Toml;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -47,7 +46,7 @@ public class Configurator {
     private List<String> excludeDirs;
     private String inputDateFormat = "yyyy MM dd";
     private String outputDateFormat = "yyyy MM dd";
-    private CodeHighLighter codeHighLighter = CodeHighLighter.block;
+    private Code code = Code.block;
     private String theme = "wells";
     private Integer port = 9090;
     private Social social;
@@ -57,10 +56,21 @@ public class Configurator {
     public static final String LINE_SEPARATOR = System.lineSeparator();
 
     public Configurator() {
+        this(Paths.get(DirectoryStructure.getInstance().CONFIG_FILE));
+    }
+    public Configurator(Path path) {
 
-        if (Files.exists(Paths.get(DirectoryStructure.getInstance().CONFIG_FILE))) {
+        if (Files.exists(path)) {
+
+            try {
+                System.out.println("\n\n" + new String(Files.readAllBytes(path)));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
             Toml toml = new Toml();
-            toml.parse(new File(DirectoryStructure.getInstance().CONFIG_FILE));
+            toml.parse(path.toFile());
             siteName = toml.getString(SITE_NAME.key);
             siteTagline = toml.getString(SITE_TAGLINE.key);
             siteAuthor = toml.getString(SITE_AUTHOR.key);
@@ -70,8 +80,9 @@ public class Configurator {
             excludeDirs = toml.getList(EXCLUDE.key);
             inputDateFormat = toml.getString(IN_DATE_FORMAT.key);
             outputDateFormat = toml.getString(OUT_DATE_FORMAT.key);
-            if (toml.getString(CODE_HIGH_LIGHTER.key) != null) {
-                codeHighLighter = CodeHighLighter.valueOf(toml.getString(CODE_HIGH_LIGHTER.key));
+            final String codeValue = toml.getString(CODE.key);
+            if (codeValue != null) {
+                code = Code.valueOf(codeValue);
             }
             theme = toml.getString(THEME.key);
             indexPosts = Integer.valueOf(toml.getLong(INDEX_POSTS.key).toString());
@@ -122,39 +133,7 @@ public class Configurator {
     }
 
     public void writeConfig(Path path) {
-        String conf = "#parsing details" + LINE_SEPARATOR
-                      + "source = \"" + sourceDir + "\"" + LINE_SEPARATOR
-                      + "output = \"" + outputDir + "\"" + LINE_SEPARATOR
-                      + "exclude = []" + LINE_SEPARATOR
-                      + "" + LINE_SEPARATOR
-                      + "#styling" + LINE_SEPARATOR
-                      + "inputdate = \"" + inputDateFormat + "\"" + LINE_SEPARATOR
-                      + "outputdate = \"MMM d yyyy\"" + LINE_SEPARATOR
-                      + "theme = \"hyde\"" + LINE_SEPARATOR
-                      + "headerimage = \"\"" + LINE_SEPARATOR
-                      + "postsperindex = 5" + LINE_SEPARATOR
-                      + "" + LINE_SEPARATOR
-                      + "#render files as per tags?" + LINE_SEPARATOR
-                      + "rendertags = false" + LINE_SEPARATOR
-                      + "" + LINE_SEPARATOR
-                      + "#preview" + LINE_SEPARATOR
-                      + "port = " + port + LINE_SEPARATOR
-                      + "" + LINE_SEPARATOR
-                      + "#social media details" + LINE_SEPARATOR
-                      + "[social]" + LINE_SEPARATOR
-                      + "	disqus = \"your disqus shortcode\"" + LINE_SEPARATOR
-                      + "	fb = \"your facebook profile id\"" + LINE_SEPARATOR
-                      + "	twitter = \"your twitter handle\"" + LINE_SEPARATOR
-                      + "	github = \"your github profile id\"" + LINE_SEPARATOR
-                      + "	gplus = \"your google plus profile id\"" + LINE_SEPARATOR
-                      + "	so = \"your stackoverflow profile id\"" + LINE_SEPARATOR
-                      + "" + LINE_SEPARATOR
-                      + "#site details" + LINE_SEPARATOR
-                      + "[site]" + LINE_SEPARATOR
-                      + "	name = \"" + siteName + "\"" + LINE_SEPARATOR
-                      + "	tagline = \"" + siteTagline + "\"" + LINE_SEPARATOR
-                      + "	author = \"" + siteAuthor + "\"" + LINE_SEPARATOR
-                      + "	baseurl = \"http://localhost:" + port + "\"";
+        String conf = toString();
 
         try (BufferedWriter br = Files.newBufferedWriter(path.resolve("config.toml"), StandardOpenOption.TRUNCATE_EXISTING)) {
             br.write(conf.trim());
@@ -163,6 +142,44 @@ public class Configurator {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    public String toString() {
+        return  "#parsing details" + LINE_SEPARATOR
+                + "source = \"" + sourceDir + "\"" + LINE_SEPARATOR
+                + "output = \"" + outputDir + "\"" + LINE_SEPARATOR
+                + "exclude = []" + LINE_SEPARATOR
+                + "" + LINE_SEPARATOR
+                + "#styling" + LINE_SEPARATOR
+                + "inputdate = \"" + inputDateFormat + "\"" + LINE_SEPARATOR
+                + "outputdate = \"MMM d yyyy\"" + LINE_SEPARATOR
+                + "theme = \"hyde\"" + LINE_SEPARATOR
+                + "headerimage = \"\"" + LINE_SEPARATOR
+                + "postsperindex = 5" + LINE_SEPARATOR
+                + "" + LINE_SEPARATOR
+                + "#render files as per tags?" + LINE_SEPARATOR
+                + "rendertags = false" + LINE_SEPARATOR
+                + "" + LINE_SEPARATOR
+                + "#preview" + LINE_SEPARATOR
+                + "port = " + port + LINE_SEPARATOR
+                + "" + LINE_SEPARATOR
+                + "code = \"" + code.name()  + "\"" + LINE_SEPARATOR
+                + "" + LINE_SEPARATOR
+                + "#social media details" + LINE_SEPARATOR
+                + "[social]" + LINE_SEPARATOR
+                + "	disqus = \"your disqus shortcode\"" + LINE_SEPARATOR
+                + "	fb = \"your facebook profile id\"" + LINE_SEPARATOR
+                + "	twitter = \"your twitter handle\"" + LINE_SEPARATOR
+                + "	github = \"your github profile id\"" + LINE_SEPARATOR
+                + "	gplus = \"your google plus profile id\"" + LINE_SEPARATOR
+                + "	so = \"your stackoverflow profile id\"" + LINE_SEPARATOR
+                + "" + LINE_SEPARATOR
+                + "#site details" + LINE_SEPARATOR
+                + "[site]" + LINE_SEPARATOR
+                + "	name = \"" + siteName + "\"" + LINE_SEPARATOR
+                + "	tagline = \"" + siteTagline + "\"" + LINE_SEPARATOR
+                + "	author = \"" + siteAuthor + "\"" + LINE_SEPARATOR
+                + "	baseurl = \"http://localhost:" + port + "\"";
     }
 
     /**
@@ -275,11 +292,11 @@ public class Configurator {
         return headerImage;
     }
 
-    public CodeHighLighter getCodeHighLighter() {
-        return codeHighLighter;
+    public Code getCode() {
+        return code;
     }
 
-    public static enum CodeHighLighter {
+    public static enum Code {
         block,
         jygments
         ;

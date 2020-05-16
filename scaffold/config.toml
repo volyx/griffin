@@ -14,6 +14,8 @@ rendertags = false
 #preview
 port = 9090
 
+code = "block"
+
 #social media details
 [social]
 	disqus = "your disqus shortcode"
@@ -29,4 +31,3 @@ port = 9090
 	tagline = "Roar And Fly"
 	author = "your awesome name"
 	baseurl = "http://localhost:9090"
-

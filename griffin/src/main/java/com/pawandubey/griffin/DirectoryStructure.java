@@ -24,9 +24,7 @@ public class DirectoryStructure {
 		instance.OUTPUT_DIRECTORY = instance.ROOT_DIRECTORY + FILE_SEPARATOR + "output";
 		instance.INFO_FILE = instance.ROOT_DIRECTORY + FILE_SEPARATOR + ".info";
 		instance.TAGS_DIRECTORY = instance.OUTPUT_DIRECTORY + FILE_SEPARATOR + "tags";
-		instance.THEMES_DIRECTORY = instance.ROOT_DIRECTORY + DirectoryStructure.FILE_SEPARATOR
-				+ THEMES_FOLDER_NAME
-				+ DirectoryStructure.FILE_SEPARATOR + Data.config.getTheme();
+		instance.THEMES_DIRECTORY = instance.ROOT_DIRECTORY + DirectoryStructure.FILE_SEPARATOR + THEMES_FOLDER_NAME;
 		return instance;
 	}
 

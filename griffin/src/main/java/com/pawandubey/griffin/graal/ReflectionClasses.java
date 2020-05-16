@@ -1,17 +1,35 @@
 package com.pawandubey.griffin.graal;
 
 import com.oracle.svm.core.annotate.AutomaticFeature;
+import com.oracle.svm.core.jni.JNIRuntimeAccess;
+import com.pawandubey.griffin.SingleIndex;
+import com.pawandubey.griffin.model.Page;
+import com.pawandubey.griffin.model.Post;
+import com.threecrickets.jygments.contrib.Css2Lexer;
+import com.threecrickets.jygments.grammar.DelegatedLexer;
+import com.threecrickets.jygments.grammar.RegexLexer;
 import org.graalvm.nativeimage.hosted.Feature;
 import org.graalvm.nativeimage.hosted.RuntimeReflection;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
+import java.util.Arrays;
 
 @AutomaticFeature
 class ReflectionClasses implements Feature {
 
 	@Override
+	public void duringSetup(DuringSetupAccess access) {
+	}
+
+	@Override
 	public void beforeAnalysis(BeforeAnalysisAccess access) {
+		try {
+//			JNIRuntimeAccess.register(NativeDB.class.getDeclaredMethod("_open_utf8", byte[].class, int.class));
+		} catch (Exception e){
+			e.printStackTrace();
+		}
 		setupClasses();
 	}
 
@@ -28,6 +46,19 @@ class ReflectionClasses implements Feature {
 	 */
 	static Class<?>[] getClasses(){
 		return new Class[]{
+				RegexLexer.class,
+				DelegatedLexer.class,
+				Css2Lexer.class,
+				com.threecrickets.jygments.contrib.Default2Style.class,
+
+				com.fasterxml.jackson.databind.ext.Java7SupportImpl.class,
+
+				Post.class,
+				SingleIndex.class,
+				Page.class,
+
+				java.util.HashMap.class,
+				java.util.ArrayList.class
 		};
 	}
 
@@ -54,12 +85,19 @@ class ReflectionClasses implements Feature {
 		try {
 			System.out.println("> Declaring class: " + clazz.getCanonicalName());
 			RuntimeReflection.register(clazz);
-			for (final Method method : clazz.getMethods()) {
-				System.out.println("\t> method: " + method.getName() + "(" + method.getParameterCount() + ")");
+			for (final Method method : clazz.getDeclaredMethods()) {
+				System.out.println("\t> method: " + method.getName() + "(" + Arrays.toString(method.getParameterTypes()) + ")");
+				JNIRuntimeAccess.register(method);
 				RuntimeReflection.register(method);
+			}
+			for (final Field field : clazz.getDeclaredFields()) {
+				System.out.println("\t> field: " + field.getName());
+				JNIRuntimeAccess.register(field);
+				RuntimeReflection.register(field);
 			}
 			for (final Constructor<?> constructor : clazz.getDeclaredConstructors()) {
 				System.out.println("\t> constructor: " + constructor.getName() + "(" + constructor.getParameterCount() + ")");
+				JNIRuntimeAccess.register(constructor);
 				RuntimeReflection.register(constructor);
 			}
 		} catch (Exception e){

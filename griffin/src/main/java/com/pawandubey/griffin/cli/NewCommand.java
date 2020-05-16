@@ -55,6 +55,9 @@ public class NewCommand implements Callable<Integer> {
 	@Option(names = {"--default", "-d"}, description = "Default parameters")
 	private boolean defaults = false;
 
+	@Option(names = {"--verbose", "-v"}, description = "Verbose logging")
+	private boolean verbose = false;
+
 	@Override
 	public Integer call() {
 		try {
@@ -99,6 +102,10 @@ public class NewCommand implements Callable<Integer> {
 		Initializer init = new Initializer();
 		init.scaffold(path, name);
 		Data.config.writeConfig(path.resolve(name));
+
+		if (verbose) {
+			System.out.println(config.toString());
+		}
 	}
 
 	private void initializeConfigurationSettings(Path path, String name) throws NumberFormatException, IOException {

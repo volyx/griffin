@@ -103,7 +103,7 @@ public class Griffin implements Runnable {
 		Path directory = Paths.get(DirectoryStructure.getInstance().ROOT_DIRECTORY);
 		Path content = directory.resolve(DirectoryStructure.getInstance().SOURCE_DIRECTORY);
 		Path output = Paths.get(DirectoryStructure.getInstance().OUTPUT_DIRECTORY);
-		Path themesPath = Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY);
+		Path themesPath = Paths.get(DirectoryStructure.getInstance().THEMES_DIRECTORY, Data.config.getTheme());
 		Path infoFilePath = Paths.get(DirectoryStructure.getInstance().INFO_FILE);
 
 		Path assetsPath = themesPath.resolve("assets");
@@ -183,6 +183,8 @@ public class Griffin implements Runnable {
 		);
 
 		if (verbose) {
+			System.out.println(config.toString());
+
 			for (Parsable parsable : parsables) {
 				System.out.println(parsable.getLocation() + "...");
 			}

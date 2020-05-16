@@ -11,6 +11,7 @@ import com.pawandubey.griffin.model.Parsable;
 import com.pawandubey.griffin.renderer.Renderer;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.function.Function;
 
 /**
@@ -26,7 +27,7 @@ public class ContentRenderer implements Function<Parsable, Parsable> {
 	 */
 	public ContentRenderer(Renderer renderer, Configurator config) {
 		this.renderer = renderer;
-		BlockEmitter blockEmitter = config.getCodeHighLighter().equals(Configurator.CodeHighLighter.block) ?
+		BlockEmitter blockEmitter = config.getCode().equals(Configurator.Code.block) ?
 				new CodeBlockEmitter(): new JygmentsCodeEmitter();
 
 		this.renderConfig = Configuration.builder().enableSafeMode()
@@ -48,7 +49,7 @@ public class ContentRenderer implements Function<Parsable, Parsable> {
 		try {
 			parsable.setContent(renderer.renderParsable(parsable));
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new UncheckedIOException(e);
 		}
 		return parsable;
 	}
