@@ -24,6 +24,16 @@ import com.threecrickets.jygments.style.Style;
  */
 public abstract class Formatter
 {
+
+	// //////////////////////////////////////////////////////////////////////////
+	// Private
+
+	private final Style style;
+
+	private final String title;
+
+	private final String encoding;
+
 	//
 	// Static operations
 	//
@@ -53,7 +63,21 @@ public abstract class Formatter
 
 	public static Formatter getByFullName( String fullName ) throws ResolutionException
 	{
-		return Jygments.loadClass(fullName);
+		try
+		{
+			return (Formatter) Jygments.class.getClassLoader().loadClass( fullName ).newInstance();
+		}
+		catch( InstantiationException x )
+		{
+		}
+		catch( IllegalAccessException x )
+		{
+		}
+		catch( ClassNotFoundException x )
+		{
+		}
+
+		return null;
 	}
 
 	public Formatter( Style style, boolean full, String title, String encoding )
@@ -79,13 +103,4 @@ public abstract class Formatter
 	}
 
 	public abstract void format( Iterable<Token> tokenSource, Writer writer ) throws IOException;
-
-	// //////////////////////////////////////////////////////////////////////////
-	// Private
-
-	private final Style style;
-
-	private final String title;
-
-	private final String encoding;
 }

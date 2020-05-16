@@ -121,9 +121,8 @@ public class HtmlFormatter extends Formatter
 
 	protected String getCssFileTemplate()
 	{
-		return "td.linenos { background-color: #f0f0f0; padding-right: 10px; }\n"
-				+ "    span.lineno { background-color: #f0f0f0; padding: 0 5px 0 5px; }\n"
-				+ "    pre { line-height: 125%; }\n";
+	    return "    td.linenos { background-color: #f0f0f0; padding-right: 10px; }\n" + "    span.lineno { background-color: #f0f0f0; padding: 0 5px 0 5px; }\n"
+		+ "    pre { line-height: 125%; }\n";
     }
     
 	protected String getDocHeader1()

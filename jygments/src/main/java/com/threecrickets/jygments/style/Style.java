@@ -14,9 +14,7 @@ package com.threecrickets.jygments.style;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,9 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.threecrickets.jygments.Jygments;
 import com.threecrickets.jygments.NestedDef;
 import com.threecrickets.jygments.ResolutionException;
@@ -71,11 +67,21 @@ public class Style extends NestedDef<Style>
 		if( style != null )
 			return style;
 
-		style = Jygments.loadClass(fullName);
-		if( style != null )
-			return style;
+		try
+		{
+			return (Style) Jygments.class.getClassLoader().loadClass( fullName ).newInstance();
+		}
+		catch( InstantiationException x )
+		{
+		}
+		catch( IllegalAccessException x )
+		{
+		}
+		catch( ClassNotFoundException x )
+		{
+		}
 
-		InputStream stream = Jygments.getResourceAsStream( fullName.replace( '.', '/' ) + ".json" );
+		InputStream stream = Jygments.class.getClassLoader().getResourceAsStream( fullName.replace( '.', '/' ) + ".json" );
 		if( stream != null )
 		{
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -155,7 +161,7 @@ public class Style extends NestedDef<Style>
 				done = true;
 				for( TokenType tokenType : TokenType.getTokenTypes() )
 				{
-					if(!TokenType.Token.equals(tokenType))
+					if( tokenType != TokenType.Token )
 					{
 						if( !styleElements.containsKey( tokenType ) )
 						{
@@ -199,7 +205,8 @@ public class Style extends NestedDef<Style>
 	protected void add( String tokenTypeName, String... styleElementNames )
 	{
 		ArrayList<String> list = new ArrayList<String>( styleElementNames.length );
-		list.addAll(Arrays.asList(styleElementNames));
+		for( String styleElementName : styleElementNames )
+			list.add( styleElementName );
 		addDef( new StyleElementDef( tokenTypeName, list ) );
 	}
 
@@ -216,28 +223,6 @@ public class Style extends NestedDef<Style>
 			}
 			else if( entry.getValue() instanceof String )
 				add( tokenTypeName, (String) entry.getValue() );
-			else
-				throw new ResolutionException( "Unexpected value in style definition: " + entry.getValue() );
-		}
-	}
-
-	protected void addJsonTree( JsonNode json ) throws ResolutionException
-	{
-		final Iterator<Map.Entry<String, JsonNode>> iterator = json.fields();
-		while (iterator.hasNext())
-		{
-			Map.Entry<String, JsonNode> entry = iterator.next();
-			String tokenTypeName = entry.getKey();
-			if( entry.getValue().isArray())
-			{
-				final ArrayNode arrayNode = (ArrayNode) entry.getValue();
-				for (JsonNode jsonNode : arrayNode) {
-					String styleElementName = jsonNode.asText();
-					add(tokenTypeName, styleElementName);
-				}
-			}
-			else if( entry.getValue().isTextual() )
-				add( tokenTypeName, entry.getValue().asText());
 			else
 				throw new ResolutionException( "Unexpected value in style definition: " + entry.getValue() );
 		}

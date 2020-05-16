@@ -13,7 +13,6 @@ package com.threecrickets.jygments;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 
@@ -29,26 +28,6 @@ public abstract class Jygments
 	//
 	// Static operations
 	//
-	public static <T> T loadClass(String fullName) {
-		try
-		{
-			return (T) Jygments.class.getClassLoader().loadClass( fullName ).newInstance();
-		}
-		catch( InstantiationException x )
-		{
-		}
-		catch( IllegalAccessException x )
-		{
-		}
-		catch( ClassNotFoundException x )
-		{
-		}
-		return null;
-	}
-
-	public static InputStream getResourceAsStream(String resource) {
-		return Jygments.class.getClassLoader().getResourceAsStream( resource );
-	}
 
 	public static Iterable<Token> lex( String code, Lexer lexer )
 	{

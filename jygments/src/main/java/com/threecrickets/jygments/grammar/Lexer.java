@@ -31,7 +31,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.threecrickets.jygments.Filter;
 import com.threecrickets.jygments.Jygments;
 import com.threecrickets.jygments.ResolutionException;
@@ -82,13 +81,21 @@ public class Lexer extends Grammar
 		if( lexer != null )
 			return lexer;
 
-
-		lexer = Jygments.loadClass(fullName);
-		if (lexer != null) {
-			return lexer;
+		try
+		{
+			return (Lexer) Jygments.class.getClassLoader().loadClass( fullName ).newInstance();
+		}
+		catch( InstantiationException x )
+		{
+		}
+		catch( IllegalAccessException x )
+		{
+		}
+		catch( ClassNotFoundException x )
+		{
 		}
 
-		InputStream stream = Jygments.getResourceAsStream( fullName.replace( '.', '/' ) + ".json" );
+		InputStream stream = Jygments.class.getClassLoader().getResourceAsStream( fullName.replace( '.', '/' ) + ".json" );
 		if( stream != null )
 		{
 			try
@@ -97,12 +104,28 @@ public class Lexer extends Grammar
 				ObjectMapper objectMapper = new ObjectMapper();
 				objectMapper.getFactory().configure( JsonParser.Feature.ALLOW_COMMENTS, true );
 				Map<String, Object> json = objectMapper.readValue( converted, HashMap.class );
-				Object className = json.get( "class" );
-				if( className == null )
-					className = "";
+//				JsonNode jsonTree = objectMapper.readTree( converted);
 
-				lexer = getByName( className.toString() );
+//				String classNameNode = json.get( "class" );
+				String className  = (String) json.get( "class" );
+				if( className == null ) {
+					className = "";
+				} else {
+//					className = classNameNode.asText();
+				}
+
+//				JsonNode classNameNode = jsonTree.get( "class" );
+//				String className;
+//				if( classNameNode == null ) {
+//					className = "";
+//				} else {
+//					className = classNameNode.asText();
+//				}
+
+				lexer = getByName(className);
 				lexer.addJson( json );
+//				lexer.addJsonTree( jsonTree );
+				lexer.resolve();
 
 				if( lexer != null )
 				{
@@ -331,22 +354,13 @@ public class Lexer extends Grammar
 			addFilename( filename );
 	}
 
-	protected void addJsonTree(JsonNode jsonNode)
+	protected void addJsonTree( JsonNode jsonNode ) throws ResolutionException
 	{
-
-		if (!jsonNode.has("filenames")) {
+		final JsonNode filenamesNodes = jsonNode.get("filenames");
+		if( filenamesNodes == null )
 			return;
-		}
-		final JsonNode filenamesNode = jsonNode.get("filenames");
-		if (!filenamesNode.isArray()) {
-			throw new RuntimeException("is not array");
-		}
-		final ArrayNode arrayNode = (ArrayNode) filenamesNode;
-
-		for (JsonNode node : arrayNode) {
-			String filename = node.asText();
-			addFilename(filename);
-		}
+		for( JsonNode filenameNode : filenamesNodes )
+			addFilename( filenameNode.asText() );
 	}
 
 	// //////////////////////////////////////////////////////////////////////////
