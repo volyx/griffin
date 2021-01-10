@@ -25,6 +25,11 @@ import com.threecrickets.jygments.ResolutionException;
  */
 public class Grammar extends NestedDef<Grammar>
 {
+
+	// //////////////////////////////////////////////////////////////////////////
+	// Private
+
+	private final Map<String, State> statesByName = new HashMap<String, State>();
 	//
 	// Attributes
 	//
@@ -146,9 +151,4 @@ public class Grammar extends NestedDef<Grammar>
 			}
 		}
 	}
-
-	// //////////////////////////////////////////////////////////////////////////
-	// Private
-
-	private final Map<String, State> statesByName = new HashMap<String, State>();
 }

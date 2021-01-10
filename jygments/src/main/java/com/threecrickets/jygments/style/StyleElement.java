@@ -58,13 +58,17 @@ public class StyleElement
 		return name;
 	}
 
+	public String buildAttribute() {
+		return "attr:" + name;
+	}
+
 	// //////////////////////////////////////////////////////////////////////////
 	// Protected
 
 	protected static final void add( StyleElement styleElement )
 	{
 		if( styleElementsByName == null )
-			styleElementsByName = new HashMap<String, StyleElement>();
+			styleElementsByName = new HashMap<>();
 
 		styleElementsByName.put( styleElement.name, styleElement );
 	}

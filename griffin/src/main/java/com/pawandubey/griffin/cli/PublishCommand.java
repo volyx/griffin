@@ -27,6 +27,8 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.pawandubey.griffin.DirectoryStructure.FILE_SEPARATOR;
+
 /**
  *
  * @author Pawan Dubey pawandubey@outlook.com
@@ -48,10 +50,16 @@ public class PublishCommand implements Callable<Integer> {
     @Option(names = {"--source", "-s"}, description = "Filesystem path to read files relative from")
     private Path source;
 
+    @Option(names = {"--dest", "-d"}, description = "Destionation path to write files")
+    private Path dest;
+
     @Override
     public Integer call() {
         try {
             DirectoryStructure.create(source);
+            if ( dest != null) {
+                DirectoryStructure.getInstance().OUTPUT_DIRECTORY = dest.toAbsolutePath().toString() + FILE_SEPARATOR + "output";
+            }
             Griffin griffin = new Griffin(Cacher.getCacher());
             griffin.printAsciiGriffin();
             griffin.publish(fastParse, rebuild, verbose);

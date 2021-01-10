@@ -35,7 +35,17 @@ public class EffectStyleElement extends StyleElement
 	// //////////////////////////////////////////////////////////////////////////
 	// Protected
 
-	protected EffectStyleElement( String name )
+	@Override
+	public String buildAttribute() {
+		if (getName().equalsIgnoreCase("bold")) {
+			return "font-weight: bold;";
+		} else if (getName().equalsIgnoreCase("italic")) {
+			return "font-style: italic;";
+		}
+		return "";
+	}
+
+	protected EffectStyleElement(String name )
 	{
 		super( name );
 	}

@@ -78,4 +78,14 @@ public class Default2Style extends Style
 			throw new RuntimeException( x );
 		}
 	}
+
+	@Override
+	public String getName() {
+		return "default2";
+	}
+
+	@Override
+	public String backgroundColor() {
+		return null;
+	}
 }

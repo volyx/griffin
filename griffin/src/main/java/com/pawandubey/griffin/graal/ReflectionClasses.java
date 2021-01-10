@@ -50,6 +50,7 @@ class ReflectionClasses implements Feature {
 				DelegatedLexer.class,
 				Css2Lexer.class,
 				com.threecrickets.jygments.contrib.Default2Style.class,
+				com.threecrickets.jygments.contrib.BasicStyle.class,
 
 				com.fasterxml.jackson.databind.ext.Java7SupportImpl.class,
 

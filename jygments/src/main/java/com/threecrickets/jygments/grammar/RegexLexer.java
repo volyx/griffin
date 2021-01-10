@@ -278,8 +278,8 @@ public class RegexLexer extends Lexer
 
 			for( Iterable<Object> arguments : (Iterable<Iterable<Object>>) stateObject )
 			{
-				List<Object> argumentsList = new ArrayList<Object>();
-				for( Object argument : (List<Object>) arguments )
+				List<Object> argumentsList = new ArrayList<>();
+				for( Object argument : arguments)
 					argumentsList.add( argument );
 
 				if( argumentsList.isEmpty() )

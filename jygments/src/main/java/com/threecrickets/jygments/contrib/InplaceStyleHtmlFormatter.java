@@ -11,14 +11,10 @@
 
 package com.threecrickets.jygments.contrib;
 
-import com.threecrickets.jygments.ResolutionException;
 import com.threecrickets.jygments.Util;
 import com.threecrickets.jygments.format.Formatter;
 import com.threecrickets.jygments.grammar.Token;
 import com.threecrickets.jygments.grammar.TokenType;
-import com.threecrickets.jygments.style.ColorStyleElement;
-import com.threecrickets.jygments.style.EffectStyleElement;
-import com.threecrickets.jygments.style.FontStyleElement;
 import com.threecrickets.jygments.style.Style;
 import com.threecrickets.jygments.style.StyleElement;
 
@@ -30,20 +26,24 @@ import java.util.Map;
 /**
  * @author Tal Liron
  */
-public class InplaceHtmlFormatter extends Formatter
+public class InplaceStyleHtmlFormatter extends Formatter
 {
 	//
 	// Construction
 	//
 
-	public InplaceHtmlFormatter() throws ResolutionException
+	public InplaceStyleHtmlFormatter()
 	{
-		this( Style.getByName( "default2" ), false, null, null );
+		this( Style.getByName( "basic" ), false, null, null );
 	}
 
-	public InplaceHtmlFormatter(Style style, boolean full, String title, String encoding )
+	public InplaceStyleHtmlFormatter(Style style, boolean full, String title, String encoding )
 	{
 		super( style, full, title, encoding );
+	}
+
+	public InplaceStyleHtmlFormatter(Style style) {
+		this( style, false, null, null );
 	}
 
 	//
@@ -53,10 +53,28 @@ public class InplaceHtmlFormatter extends Formatter
 	@Override
 	public void format( Iterable<Token> tokenSource, Writer writer ) throws IOException
 	{
-		writer.write("<div><pre>\n");
+
+
+		writer.write("<div class=\"highlight\" ");
+		if (getStyle().backgroundColor() != null) {
+			writer.write("style=\"background: ");
+			writer.write(getStyle().backgroundColor());
+			writer.write("\"");
+		}
+		writer.write(">");
+		writer.write("<pre ");
+		if (getStyle().lineHeight() != null) {
+			writer.write("style=\"");
+			writer.write(getStyle().lineHeight());
+			writer.write("\"");
+		}
+		writer.write(">\n");
 		StringBuilder line = new StringBuilder();
 		int line_no = 1;
 		for (Token token : tokenSource) {
+
+			System.out.println("token: " + token.getValue() + " " + token.getType());
+
 			String[] toks = token.getValue().split("\n", -1);
 			for (int i = 0; i < toks.length - 1; i++) {
 				format_partial_token(token, toks[i], line);
@@ -72,15 +90,52 @@ public class InplaceHtmlFormatter extends Formatter
 		writer.flush();
 	}
 
+
     private void format_partial_token(Token token, String part_tok, StringBuilder line)
-    {	
+    {
+		final Map<TokenType, List<StyleElement>> styles = getStyle().getStyleElements();
+
 		if( token.getType().getShortName().length() > 0 )
 		{
-			line.append( "<span class=\"" );
-			line.append( token.getType().getShortName() );
-			line.append( "\">" );
+
+
+			final List<StyleElement> styleElements = styles.get(token.getType());
+
+			final String styleAttribute;
+			if (styleElements == null) {
+				styleAttribute = "";
+			} else {
+				StringBuilder sb = new StringBuilder();
+				for (StyleElement styleElement : styleElements) {
+					if (styleElement != null) {
+						if (sb.length() != 0)
+							sb.append(";");
+
+//						if (styleElement.getName().isEmpty()) {
+//
+//						} else {
+							sb.append(styleElement.buildAttribute());
+//						}
+
+
+					}
+				}
+				styleAttribute = sb.toString();
+			}
+			line.append( "<span ")
+
+			.append("class=\"")
+					.append( token.getType().getShortName())
+					.append("\"")
+
+			.append(" style=\"" )
+					.append(styleAttribute)
+					.append( "\"" )
+
+			.append(">" );
 			line.append( Util.escapeHtml( part_tok ) );
 			line.append( "</span>" );
+
 		}
 		else
 			line.append( Util.escapeHtml( part_tok ) );

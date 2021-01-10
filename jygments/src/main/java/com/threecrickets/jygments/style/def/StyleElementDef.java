@@ -45,10 +45,11 @@ public class StyleElementDef extends Def<Style>
 		if( tokenType == null )
 			throw new ResolutionException( "Unknown token type: " + tokenTypeName );
 
-		//TokenType parent = tokenType.getParent();
-		//boolean addToParent = false;
-		//if( ( parent != null ) && ( !style.getStyleElements().containsKey( parent ) ) )
-			//addToParent = true;
+		TokenType parent = tokenType.getParent();
+		boolean addToParent = false;
+		if( ( parent != null ) && ( !style.getStyleElements().containsKey( parent ) ) )
+//		if( ( parent != null ) /*&& ( !style.getStyleElements().containsKey( parent ) )*/ )
+			addToParent = true;
 		for( String styleElementName : styleElementNames )
 		{
 			StyleElement styleElement = StyleElement.getStyleElementByName( styleElementName );
@@ -56,8 +57,8 @@ public class StyleElementDef extends Def<Style>
 				throw new ResolutionException( "Unknown style element: " + styleElementName );
 
 			style.addStyleElement( tokenType, styleElement );
-			//if( addToParent )
-				//style.addStyleElement( parent, styleElement );
+			if( addToParent )
+				style.addStyleElement( parent, styleElement );
 		}
 
 		resolved = true;

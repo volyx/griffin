@@ -15,10 +15,19 @@
  */
 package com.pawandubey.griffin.markdown;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
 import com.github.rjeschke.txtmark.BlockEmitter;
+import com.threecrickets.jygments.contrib.InplaceClassHtmlFormatter;
+import com.threecrickets.jygments.contrib.InplaceStyleHtmlFormatter;
+import com.threecrickets.jygments.style.Style;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,7 +36,36 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author Pawan Dubey pawandubey@outlook.com
  */
-public class CodeBlockEmitterTest {
+@Disabled
+class CodeBlockEmitterTest {
+
+    public static final String CODE = "class Solution {\n" +
+            "    public int countSubstrings(String s) {\n" +
+            "        int n = s.length();\n" +
+            "\n" +
+            "        int[][] a = new int[n][n];\n" +
+            "        int count = 0;        \n" +
+            "        for (int i = 0; i < n; i++) {\n" +
+            "            a[i][i] = 1;\n" +
+            "            count++;\n" +
+            "        }\n" +
+            "\n" +
+            "\n" +
+            "        for (int col = 1; col < n; col++) {\n" +
+            "            for (int row = 0; row < col; row++) {\n" +
+            "                if (row == col - 1 && s.charAt(col) == s.charAt(row)) {\n" +
+            "                    a[row][col] = 1;\n" +
+            "                    count++;\n" +
+            "                } else if (a[row + 1][col - 1] == 1 && s.charAt(col) == s.charAt(row) ) {\n" +
+            "                     a[row][col] = 1;\n" +
+            "                    count++;\n" +
+            "                }\n" +
+            "            }\n" +
+            "        }\n" +
+            "\n" +
+            "        return count;\n" +
+            "    }\n" +
+            "}";
 
     public CodeBlockEmitterTest() {
     }
@@ -73,10 +111,77 @@ public class CodeBlockEmitterTest {
                 "</pre></div>\n";
         List<String> list = Arrays.asList(code.split(System.lineSeparator()));
         String meta = "java";
-        BlockEmitter instance = new JygmentsCodeEmitter();
+        BlockEmitter instance = new JygmentsCodeEmitter(new InplaceStyleHtmlFormatter());
         instance.emitBlock(out, list, meta);
         System.out.println(out.toString());
         assertEquals(expected, out.toString());
+    }
+
+
+    @Test
+    public void testStyleJygmentsEmitBlock() throws IOException {
+        StringBuilder out = new StringBuilder();
+        String code = "class Solution {\n" +
+                "    public int countSubstrings(String s) {\n" +
+                "        int n = s.length();\n" +
+                "\n" +
+                "        int[][] a = new int[n][n];\n" +
+                "        int count = 0;        \n" +
+                "        for (int i = 0; i < n; i++) {\n" +
+                "            a[i][i] = 1;\n" +
+                "            count++;\n" +
+                "        }\n" +
+                "\n" +
+                "\n" +
+                "        for (int col = 1; col < n; col++) {\n" +
+                "            for (int row = 0; row < col; row++) {\n" +
+                "                if (row == col - 1 && s.charAt(col) == s.charAt(row)) {\n" +
+                "                    a[row][col] = 1;\n" +
+                "                    count++;\n" +
+                "                } else if (a[row + 1][col - 1] == 1 && s.charAt(col) == s.charAt(row) ) {\n" +
+                "                     a[row][col] = 1;\n" +
+                "                    count++;\n" +
+                "                }\n" +
+                "            }\n" +
+                "        }\n" +
+                "\n" +
+                "        return count;\n" +
+                "    }\n" +
+                "}";
+
+        List<String> list = Arrays.asList(code.split(System.lineSeparator()));
+        String meta = "java";
+        BlockEmitter instance = new JygmentsCodeEmitter(new InplaceStyleHtmlFormatter());
+        instance.emitBlock(out, list, meta);
+
+        Path path = new File("src/test/resources/styles.html").toPath();
+        Files.write(path, out.toString().getBytes());
+    }
+
+
+    @Test
+    void testClassJygmentsEmitBlock() throws IOException {
+        StringBuilder out = new StringBuilder();
+
+        List<String> list = Arrays.asList(CODE.split(System.lineSeparator()));
+        String meta = "java";
+        BlockEmitter instance = new JygmentsCodeEmitter(new InplaceClassHtmlFormatter());
+        instance.emitBlock(out, list, meta);
+        Path path = new File("src/test/resources/classes.html").toPath();
+        Files.write(path, out.toString().getBytes());
+        Assertions.assertNotNull(instance);
+    }
+
+    @Test
+    void testStyleJygmentsEmitBlockMonokai() throws IOException {
+        final StringBuilder out = new StringBuilder();
+        final List<String> list = Arrays.asList(CODE.split(System.lineSeparator()));
+        final String meta = "java";
+        final BlockEmitter instance = new JygmentsCodeEmitter(new InplaceStyleHtmlFormatter(Style.getByName( "monokai")));
+        instance.emitBlock(out, list, meta);
+        final Path path = new File("src/test/resources/monokai.html").toPath();
+        Files.write(path, out.toString().getBytes());
+        Assertions.assertNotNull(instance);
     }
 
 }

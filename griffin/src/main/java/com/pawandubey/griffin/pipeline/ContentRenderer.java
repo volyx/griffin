@@ -9,6 +9,7 @@ import com.pawandubey.griffin.markdown.CodeBlockEmitter;
 import com.pawandubey.griffin.markdown.JygmentsCodeEmitter;
 import com.pawandubey.griffin.model.Parsable;
 import com.pawandubey.griffin.renderer.Renderer;
+import com.threecrickets.jygments.contrib.InplaceStyleHtmlFormatter;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -28,7 +29,7 @@ public class ContentRenderer implements Function<Parsable, Parsable> {
 	public ContentRenderer(Renderer renderer, Configurator config) {
 		this.renderer = renderer;
 		BlockEmitter blockEmitter = config.getCode().equals(Configurator.Code.block) ?
-				new CodeBlockEmitter(): new JygmentsCodeEmitter();
+				new CodeBlockEmitter(): new JygmentsCodeEmitter(new InplaceStyleHtmlFormatter());
 
 		this.renderConfig = Configuration.builder().enableSafeMode()
 				.forceExtentedProfile()

@@ -39,7 +39,7 @@ public class Style extends NestedDef<Style>
 	// Static operations
 	//
 
-	public static Style getByName( String name ) throws ResolutionException
+	public static Style getByName( String name )
 	{
 		if( Character.isLowerCase( name.charAt( 0 ) ) )
 			name = Character.toUpperCase( name.charAt( 0 ) ) + name.substring( 1 ) + "Style";
@@ -54,13 +54,13 @@ public class Style extends NestedDef<Style>
 			name = pack + "." + name;
 			style = getByFullName( name );
 			if( style == null )
-				throw new ResolutionException( "Could not load style: " + name );
+				throw new RuntimeException( "Could not load style: " + name );
 			return style;
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public static Style getByFullName( String fullName ) throws ResolutionException
+	public static Style getByFullName( String fullName )
 	{
 		// Try cache
 		Style style = styles.get( fullName );
@@ -102,15 +102,17 @@ public class Style extends NestedDef<Style>
 			}
 			catch( JsonParseException x )
 			{
-				throw new ResolutionException( x );
+				throw new RuntimeException( x );
 			}
 			catch( JsonMappingException x )
 			{
-				throw new ResolutionException( x );
+				throw new RuntimeException( x );
 			}
 			catch( IOException x )
 			{
-				throw new ResolutionException( x );
+				throw new RuntimeException( x );
+			} catch (ResolutionException e) {
+				throw new RuntimeException( e );
 			}
 		}
 
@@ -124,6 +126,19 @@ public class Style extends NestedDef<Style>
 	public Map<TokenType, List<StyleElement>> getStyleElements()
 	{
 		return styleElements;
+	}
+
+
+	public String getName() {
+		return null;
+	}
+
+	public String backgroundColor() {
+		return null;
+	}
+
+	public java.lang.String lineHeight() {
+		return null;
 	}
 
 	//

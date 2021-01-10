@@ -67,6 +67,11 @@ public class ColorStyleElement extends StyleElement
 		return type;
 	}
 
+	@Override
+	public String buildAttribute() {
+		return "color: " + getColor();
+	}
+
 	// //////////////////////////////////////////////////////////////////////////
 	// Protected
 

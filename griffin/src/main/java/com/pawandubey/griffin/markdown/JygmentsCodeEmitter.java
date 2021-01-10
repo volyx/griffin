@@ -2,9 +2,10 @@ package com.pawandubey.griffin.markdown;
 
 import com.github.rjeschke.txtmark.BlockEmitter;
 import com.threecrickets.jygments.ResolutionException;
-import com.threecrickets.jygments.contrib.InplaceHtmlFormatter;
+import com.threecrickets.jygments.contrib.InplaceClassHtmlFormatter;
 import com.threecrickets.jygments.format.Formatter;
 import com.threecrickets.jygments.grammar.Lexer;
+import com.threecrickets.jygments.grammar.Token;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -16,12 +17,8 @@ public class JygmentsCodeEmitter implements BlockEmitter {
 	private final BlockEmitter fallback = new CodeBlockEmitter();
 	private final Formatter formatter;
 
-	public JygmentsCodeEmitter() {
-		try {
-			this.formatter = new InplaceHtmlFormatter();
-		} catch (ResolutionException e) {
-			throw new RuntimeException(e);
-		}
+	public JygmentsCodeEmitter(Formatter formatter) {
+		this.formatter = formatter;
 	}
 
 	@Override
@@ -36,7 +33,8 @@ public class JygmentsCodeEmitter implements BlockEmitter {
 			Objects.requireNonNull(lexer);
 			String code = String.join("\n", lines);
 			final StringWriter writer = new StringWriter();
-			formatter.format(lexer.getTokens(code), writer);
+			final Iterable<Token> tokens = lexer.getTokens(code);
+			formatter.format(tokens, writer);
 			final String result = writer.toString();
 
 			out.append(result);
