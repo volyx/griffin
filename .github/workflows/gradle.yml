@@ -41,9 +41,10 @@ jobs:
       run: ./gradlew :griffin:build --console=plain
 
     - name: Set up GraalVM
-      uses: DeLaGuardo/setup-graalvm@2.0
+    - uses: DeLaGuardo/setup-graalvm@master
       with:
         graalvm-version: '19.3.0.java8'
+    - run: java -version
 
     - name: Install GraalVM native-image
       run: gu install native-image
