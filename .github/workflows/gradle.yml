@@ -41,7 +41,7 @@ jobs:
       run: ./gradlew :griffin:build --console=plain
 
     - name: Set up GraalVM
-    - uses: DeLaGuardo/setup-graalvm@master
+      uses: DeLaGuardo/setup-graalvm@master
       with:
         graalvm-version: '19.3.0.java8'
 
