@@ -43,7 +43,8 @@ jobs:
     - name: Set up GraalVM
     - uses: DeLaGuardo/setup-graalvm@master
       with:
-        graalvm-version: '19.3.0.java8'
+        graalvm-version: '19.3.0.java8' // GraalVM version, no pattern syntax available atm.
+    - run: java -version
 
     - name: Install GraalVM native-image
       run: gu install native-image
